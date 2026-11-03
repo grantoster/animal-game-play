@@ -4,6 +4,12 @@ from PIL import Image, ImageDraw
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC=os.path.join(ROOT,'src','game.html'); SITE=ROOT  # Pages serves repo root
 body=open(SRC,encoding='utf-8').read()
+tsv=open(os.path.join(ROOT,'src','animals.tsv'),encoding='utf-8').read().strip()
+assert '`' not in tsv and '${' not in tsv and '\\' not in tsv
+AI_URL=(open(os.path.join(ROOT,'ai_url.txt')).read().strip() if os.path.exists(os.path.join(ROOT,'ai_url.txt')) else '')
+body=body.replace('__ANIMALS__',tsv).replace('__AI_URL__',AI_URL)
+os.makedirs(os.path.join(ROOT,'dist'),exist_ok=True)
+open(os.path.join(ROOT,'dist','artifact.html'),'w',encoding='utf-8').write(body)
 body=body.replace('<meta name="claude:viewport-fit-sides" content="cover">\n','')
 title_line,rest=body.split('\n',1)
 ver=hashlib.sha1(body.encode()).hexdigest()[:10]

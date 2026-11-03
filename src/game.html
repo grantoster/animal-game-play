@@ -121,6 +121,14 @@ input[type=text],input[type=number]{width:100%;box-sizing:border-box;font:700 20
 .mic.on{background:var(--plum);border-color:var(--plum);color:#fff}
 .groups{display:flex;flex-direction:column;gap:14px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.qgroup{border:2px solid var(--line);border-radius:16px;padding:4px 12px 10px}
+.qgroup summary{display:flex;justify-content:space-between;gap:10px;font:800 15px var(--body);letter-spacing:.06em;text-transform:uppercase;cursor:pointer;min-height:40px;align-items:center;list-style:none}
+.qgroup summary::-webkit-details-marker{display:none}
+.qgroup summary::before{content:"▸";margin-right:6px}.qgroup[open] summary::before{content:"▾"}
+.qgroup summary span:first-child{flex:1}
+.freelog{display:flex;flex-direction:column;gap:6px;margin-top:10px;font-weight:700}
+.tagx{display:inline-block;min-width:38px;text-align:center;border-radius:8px;padding:1px 6px;font:800 13px var(--body);margin-right:6px}
+.tagx.yes{background:var(--leaf-soft);color:var(--leaf-dark)}.tagx.no{background:var(--plum-soft);color:var(--plum-dark)}.tagx.idk{background:var(--sun-soft);color:var(--ink)}
 .chip{font:700 16px var(--body);text-align:left;border:2px solid var(--line);background:#fff;color:var(--ink);border-radius:14px;padding:9px 12px;cursor:pointer;min-height:44px}
 .chip:disabled{cursor:default}
 .chip.locked{opacity:.5}
@@ -192,144 +200,64 @@ input[type=text],input[type=number]{width:100%;box-sizing:border-box;font:700 20
 (function(){
 'use strict';
 // ================= Questions =================
+// [code, question, group, help]
 const BASEQ = [
- ['ma','Is it a mammal?','What kind','Mammals have fur or hair and drink milk when they are babies.'],
- ['bi','Is it a bird?','What kind'],
- ['re','Is it a reptile?','What kind','Reptiles have dry, scaly skin, like snakes and lizards.'],
- ['fi','Is it a fish?','What kind'],
- ['am','Is it an amphibian, like a frog?','What kind','Amphibians start life in water and can live on land later.'],
- ['in','Is it a bug or insect?','What kind'],
- ['ex','Is it extinct?','What kind','Extinct means none are alive anymore, like dinosaurs.'],
- ['fu','Does it have fur?','Its body'],
- ['fe','Does it have feathers?','Its body'],
- ['sc','Does it have scales?','Its body'],
- ['sh','Does it have a shell?','Its body'],
- ['bg','Is it bigger than a grown-up?','Its body'],
- ['sm','Is it smaller than a cat?','Its body'],
- ['l4','Does it walk on four legs?','Its body'],
- ['nl','Does it have no legs at all?','Its body'],
- ['ln','Does it have a long neck?','Its body'],
- ['ho','Does it have horns or antlers?','Its body'],
- ['st','Does it have stripes?','Its body'],
- ['sp','Does it have spots?','Its body'],
+ ['ma','Is it a mammal?','What kind'],['bi','Is it a bird?','What kind'],['re','Is it a reptile?','What kind','Dinosaurs count as reptiles here.'],
+ ['fi','Is it a fish?','What kind','Sharks, rays and seahorses are fish. Whales and dolphins are not.'],['am','Is it an amphibian?','What kind'],
+ ['in','Is it an insect?','What kind','Six legs. Spiders and crabs are not insects.'],
+ ['ar','Is it an arachnid?','What kind','Spiders, scorpions and their relatives.'],
+ ['cr','Is it a crustacean?','What kind','Crabs, shrimp, lobsters and their relatives.'],['mo','Is it a mollusk?','What kind','Octopuses, squid, snails, clams.'],
+ ['iv','Is it an invertebrate?','What kind','No backbone.'],['mr','Is it a marsupial?','What kind','Mammals whose babies grow in a pouch or on the belly.'],
+ ['pr','Is it a primate?','What kind'],['ro','Is it a rodent?','What kind'],
+ ['fel','Is it in the cat family?','What kind'],['can','Is it in the dog family?','What kind'],
+ ['wb','Is it warm-blooded?','What kind'],
+ ['ex','Is it extinct?','What kind'],
+ ['fu','Does it have fur?','Its body'],['lf','Does it have long or shaggy fur?','Its body'],['fe','Does it have feathers?','Its body'],['sc','Does it have scales?','Its body'],
+ ['sh','Does it have a shell?','Its body'],['bg','Is it bigger than a grown-up?','Its body','Heavier than about 150 pounds or longer than about 6 feet.'],
+ ['sm','Is it smaller than a house cat?','Its body'],['l4','Does it walk on four legs?','Its body'],['2l','Does it walk on two legs?','Its body'],
+ ['6l','Does it have six legs?','Its body'],['8l','Does it have eight legs?','Its body'],['nl','Does it have no legs at all?','Its body'],
+ ['ln','Does it have a long neck?','Its body'],['tl','Does it have a tail?','Its body'],['wg','Does it have wings?','Its body','Even wings it can\'t fly with.'],
+ ['fn','Does it have fins or flippers?','Its body'],['tn','Does it have tentacles or arms with suckers?','Its body'],['ho','Does it have horns or antlers?','Its body'],
+ ['tk','Does it have tusks?','Its body'],['tr','Does it have a trunk?','Its body'],['mn','Does it have a mane?','Its body'],['hm','Does it have a hump?','Its body'],
+ ['po','Does it have a pouch?','Its body'],['bk','Does it have a beak or bill?','Its body'],['cw','Does it have claws or talons?','Its body'],
+ ['hf','Does it have hooves?','Its body'],['wh','Does it have whiskers?','Its body'],['spk','Does it have spikes, spines or quills?','Its body'],
+ ['le','Does it have big or long ears?','Its body'],['st','Does it have stripes?','Its body'],['sp','Does it have spots?','Its body'],
  ['bw','Is it black and white?','Its body'],
- ['pe','Can it be a pet?','Where it lives'],
- ['fa','Does it live on a farm?','Where it lives'],
- ['wa','Does it live in or near water?','Where it lives'],
- ['oc','Does it live in the ocean?','Where it lives'],
- ['af','Does it live in Africa?','Where it lives'],
- ['co','Does it live where it gets cold and snowy?','Where it lives'],
- ['jg','Does it live in a forest or jungle?','Where it lives'],
- ['fl','Can it fly?','What it does'],
- ['me','Does it eat meat?','What it does'],
- ['ni','Is it awake mostly at night?','What it does'],
- ['cl','Can it climb trees?','What it does'],
- ['ju','Does it hop or jump a lot?','What it does']
+ ['cbr','Is it brown?','Colors'],['cgy','Is it gray?','Colors'],['cwt','Is it white?','Colors'],['cbk','Is it black?','Colors'],['cor','Is it orange?','Colors'],
+ ['cye','Is it yellow or golden?','Colors'],['cgr','Is it green?','Colors'],['cpk','Is it pink?','Colors'],['crd','Is it red?','Colors'],['cbl','Is it blue?','Colors'],['cpu','Is it purple?','Colors'],
+ ['wa','Does it live in or near water?','Where it lives'],['oc','Does it live in the ocean?','Where it lives'],['dp','Does it live in the deep sea?','Where it lives'],
+ ['fw','Does it live in fresh water?','Where it lives','Rivers, lakes, ponds, swamps.'],['af','Does it live in Africa?','Where it lives'],['as','Does it live in Asia?','Where it lives'],
+ ['eu','Does it live in Europe?','Where it lives'],
+ ['na','Does it live in North America?','Where it lives'],['sa','Does it live in South America?','Where it lives'],
+ ['au','Does it live in Australia or Oceania?','Where it lives'],['an','Does it live in Antarctica or the Southern Ocean?','Where it lives'],['ac','Does it live in the Arctic?','Where it lives'],
+ ['co','Does it live where it gets cold and snowy?','Where it lives'],['jg','Does it live in a forest or jungle?','Where it lives'],['rf','Does it live in a rainforest?','Where it lives'],
+ ['ds','Does it live in the desert?','Where it lives'],['sv','Does it live in a savanna or grassland?','Where it lives'],['mt','Does it live in the mountains?','Where it lives'],
+ ['ug','Does it live underground or in burrows?','Where it lives'],['is','Does it live only on islands?','Where it lives'],['pe','Is it commonly kept as a pet?','Where it lives'],['fa','Does it live on farms?','Where it lives'],
+ ['me','Does it eat meat?','What it does','Including insects, fish or other animals.'],['pl','Does it eat plants?','What it does','Including fruit, seeds or nectar.'],
+ ['ap','Is it an apex predator?','What it does','At the top of its food chain.'],['fl','Can it fly?','What it does'],['gli','Can it glide?','What it does'],
+ ['sw','Can it swim well?','What it does'],['fs','Is it really fast?','What it does'],['ni','Is it nocturnal?','What it does','Awake mostly at night.'],
+ ['cl','Can it climb trees?','What it does'],['ju','Does it hop or jump a lot?','What it does'],['eg','Does it lay eggs?','What it does'],
+ ['vn','Is it venomous, or can it sting?','What it does'],['po2','Is it poisonous to eat or touch?','What it does'],['el','Can it make electricity?','What it does'],
+ ['gl','Can it glow?','What it does','Bioluminescence.'],['ec','Does it use echolocation?','What it does'],['cm','Does it use camouflage?','What it does'],
+ ['cc','Can it change color?','What it does'],['mi','Does it mimic or fake something else?','What it does'],['rg','Can it regrow body parts?','What it does'],
+ ['mg','Does it migrate?','What it does'],['hb','Does it hibernate?','What it does'],['gp','Does it live in a group?','What it does','Herd, pack, flock, pod, colony or school.'],
+ ['jb','Do people use it for work?','What it does'],['ue','Can it live over 50 years?','What it does'],['end','Is it endangered?','What it does','Endangered or critically endangered.']
 ];
 const BASECODES = BASEQ.map(q=>q[0]);
-const GROUPS = ['What kind','Its body','Where it lives','What it does','Our questions'];
-
-// ================= Animals: name | emoji | yes-codes | fun fact =================
-const RAW = `dog|🐶|ma fu pe l4 me|Dogs can smell thousands of times better than people can.
-cat|🐱|ma fu pe l4 me cl ju|Cats spend about two-thirds of their lives sleeping.
-horse|🐴|ma fu fa l4 bg|Horses can sleep standing up.
-cow|🐄|ma fu fa l4 bg ho sp bw|A cow has one stomach with four different parts.
-pig|🐷|ma fa l4|Pigs are very smart and can learn their own names.
-sheep|🐑|ma fu fa l4|Sheep can recognize the faces of other sheep and even people.
-goat|🐐|ma fu fa l4 ho ju|Goats have rectangle-shaped pupils that help them see almost all the way around.
-chicken|🐔|bi fe fa|Chickens are distant cousins of dinosaurs like T. rex.
-duck|🦆|bi fe fa wa fl|Duck feathers are so waterproof that water rolls right off.
-rabbit|🐰|ma fu pe l4 ju sm|A happy rabbit jumps and twists in the air. That move is called a binky.
-hamster|🐹|ma fu pe l4 sm ni|Hamsters stuff food in their cheek pouches to carry it home.
-mouse|🐭|ma fu l4 sm ni|Mice squeak to each other with sounds too high for people to hear.
-lion|🦁|ma fu af l4 me bg|A lion's roar can be heard about 5 miles away.
-tiger|🐯|ma fu jg l4 me st bg|No two tigers have exactly the same stripes.
-elephant|🐘|ma af l4 bg|Elephants use their trunks to drink, smell, hug and say hello.
-giraffe|🦒|ma fu af l4 ln sp bg|A giraffe's tongue is about 20 inches long and dark blue-black.
-zebra|🦓|ma fu af l4 st bw bg|A baby zebra can stand up less than an hour after it's born.
-hippo|🦛|ma af l4 bg wa|Hippos can hold their breath underwater for about 5 minutes.
-rhino|🦏|ma af l4 bg ho|A rhino's horn is made of keratin, the same stuff as your fingernails.
-monkey|🐒|ma fu jg cl ju|Some monkeys can hang from branches using just their tails.
-gorilla|🦍|ma fu af jg bg|Gorillas build a fresh nest to sleep in every night.
-bear|🐻|ma fu jg l4 me bg cl|Bears can smell food from miles away.
-polar bear|🐻‍❄️|ma fu co l4 me bg wa oc|A polar bear's fur looks white, but the skin underneath is black.
-panda|🐼|ma fu jg l4 bw bg cl|Pandas spend about 12 hours a day eating bamboo.
-koala|🐨|ma fu jg cl ni|Koalas sleep up to 20 hours a day.
-kangaroo|🦘|ma fu ju|A baby kangaroo is called a joey and grows up in its mom's pouch.
-wolf|🐺|ma fu jg l4 me co ni|Wolves live and hunt in family groups called packs.
-fox|🦊|ma fu jg l4 me ni|Foxes can hear a mouse under the snow and pounce right on it.
-deer|🦌|ma fu jg l4 ho ju|Male deer grow a brand-new set of antlers every year.
-moose|🫎|ma fu co jg l4 ho bg wa|Moose are great swimmers and can dive underwater to eat plants.
-raccoon|🦝|ma fu jg l4 ni cl st|Raccoons feel and wash their food with their nimble front paws.
-squirrel|🐿️|ma fu jg l4 sm cl ju|Squirrels bury nuts and forget many of them, which plants new trees.
-bat|🦇|ma fu fl sm ni me|Bats are the only mammals that can truly fly.
-skunk|🦨|ma fu l4 st bw ni|A skunk stomps its feet as a warning before it sprays.
-hedgehog|🦔|ma l4 sm ni pe me|A hedgehog has about 5,000 to 7,000 spines.
-owl|🦉|bi fe fl ni me jg|Owls can turn their heads almost all the way around.
-eagle|🦅|bi fe fl me|Eagles can spot a rabbit from about 2 miles away.
-penguin|🐧|bi fe co wa oc bw me|Penguins can't fly in the air, but they zoom through the water like they're flying.
-parrot|🦜|bi fe fl pe jg cl|Some parrots can learn to copy hundreds of words.
-flamingo|🦩|bi fe fl ln wa af|Flamingos are pink because of the shrimp and algae they eat.
-swan|🦢|bi fe fl ln wa|Baby swans are called cygnets.
-peacock|🦚|bi fe|Only the boy peafowl, the peacock, has the giant fancy tail.
-shark|🦈|fi sc wa oc me nl bg|A shark can grow and lose thousands of teeth in its life.
-dolphin|🐬|ma wa oc me nl bg|Dolphins call each other with their own special whistles, a lot like names.
-whale|🐋|ma wa oc me nl bg|The blue whale is the biggest animal that has ever lived.
-octopus|🐙|wa oc me|An octopus has three hearts and blue blood.
-goldfish|🐟|fi sc wa pe nl sm|Goldfish can remember things for months, not just a few seconds.
-jellyfish|🪼|wa oc nl|Jellyfish have no brain, no heart and no bones.
-crab|🦀|wa oc sh me sm|Crabs walk sideways.
-seal|🦭|ma fu wa oc co me|Seals use their whiskers to feel fish moving in the water.
-turtle|🐢|re sc sh wa pe l4|A turtle can't leave its shell. The shell is part of its skeleton.
-snake|🐍|re sc nl me jg|Snakes smell with their tongues.
-crocodile|🐊|re sc wa me l4 bg af|Crocodiles have been around since the time of the dinosaurs.
-lizard|🦎|re sc l4 sm pe cl me|Some lizards can drop their tails to escape and grow new ones.
-frog|🐸|am wa ju sm l4 jg me|Frogs drink water through their skin.
-butterfly|🦋|in fl sm|Butterflies taste with their feet.
-bee|🐝|in fl sm st|Honeybees do a wiggle dance to tell other bees where the flowers are.
-ladybug|🐞|in fl sm sp me|A ladybug can eat thousands of tiny bugs called aphids in its life.
-ant|🐜|in sm|Ants can carry many times their own body weight.
-spider|🕷️|sm me ni|Spider silk is stronger than a steel thread of the same thickness.
-snail|🐌|sh sm nl|Snails carry their homes on their backs and leave a slimy trail.
-camel|🐪|ma fu l4 bg af|A camel's hump stores fat, not water.
-llama|🦙|ma fu fa l4 ln|Llamas hum to talk to each other.
-sloth|🦥|ma fu jg cl|Sloths move so slowly that tiny plants grow in their fur.
-leopard|🐆|ma fu af l4 me sp cl|Leopards drag their food up into trees to keep it safe.
-otter|🦦|ma fu wa me|Sea otters hold hands while they sleep so they don't float apart.
-beaver|🦫|ma fu wa jg|A beaver's front teeth never stop growing, so it keeps chewing wood.`;
-const RAW_HARD = `t. rex|🦖|re sc ex me bg|T. rex had teeth about as long as bananas.
-brontosaurus|🦕|re sc ex bg ln l4|Brontosaurus ate plants and had a neck longer than a giraffe is tall.
-woolly mammoth|🦣|ma fu ex bg co l4 ho|Some woolly mammoths were still alive when the Egyptian pyramids were built.
-dodo|🦤|bi fe ex|The dodo was a bird that couldn't fly. It lived on an island called Mauritius.
-bison|🦬|ma fu l4 bg ho co|Bison are the heaviest land animals in North America.
-orangutan|🦧|ma fu jg cl|Orangutans hold big leaves over their heads like umbrellas when it rains.
-badger|🦡|ma fu l4 me ni st bw|Badgers dig big underground homes called setts.
-turkey|🦃|bi fe fa|Only boy turkeys gobble.
-goose|🪿|bi fe fl fa wa|Geese fly in a V shape so the flock uses less energy.
-donkey|🫏|ma fu fa l4|A donkey's loud call is called a bray.
-crow|🐦‍⬛|bi fe fl|Crows are so smart they can use sticks as tools.
-squid|🦑|wa oc me nl|Giant squid have eyes as big as dinner plates.
-lobster|🦞|wa oc sh me|Some lobsters live for more than 50 years.
-shrimp|🦐|wa oc sm|Some shrimp snap their claws so fast it makes a loud popping bubble.
-pufferfish|🐡|fi wa oc sp|A pufferfish gulps water to blow up like a spiky ball.
-scorpion|🦂|sm me ni|Scorpions glow blue-green under ultraviolet light.
-cricket|🦗|in sm ju ni|Crickets chirp by rubbing their wings together.
-beetle|🪲|in fl sm|There are more kinds of beetles than any other animal on Earth.
-mosquito|🦟|in fl sm|Only girl mosquitoes bite.
-earthworm|🪱|sm nl|Earthworms breathe through their skin.
-caterpillar|🐛|in sm|A caterpillar grows up to become a butterfly or a moth.
-water buffalo|🐃|ma l4 bg ho wa fa|Water buffalo roll in mud to stay cool and keep bugs away.
-dove|🕊️|bi fe fl|Doves and pigeons belong to the same bird family.`;
-const EASY = new Set(['dog','cat','horse','cow','pig','sheep','goat','chicken','duck','rabbit','hamster','mouse','lion','tiger','elephant','giraffe','zebra','monkey','bear','panda','penguin','frog','turtle','snake','butterfly','bee','goldfish','shark','dolphin','owl','fox','kangaroo','crocodile','whale','octopus','parrot']);
-function parse(raw,tier){
-  return raw.split('\n').map(line=>{
-    const [name,emoji,codes,fact]=line.split('|');
-    const yes=new Set(codes.trim().split(/\s+/));
-    const attrs={}; BASECODES.forEach(c=>attrs[c]=yes.has(c));
-    return {name,emoji,attrs,fact,tier:tier==='h'?'h':(EASY.has(name)?'e':'n'),learned:false};
-  });
-}
-const BUILTIN=[...parse(RAW,'n'),...parse(RAW_HARD,'h')];
+const COLOR = new Set(BASEQ.filter(q=>q[2]==='Colors').map(q=>q[0]));
+const GROUPS = ['What kind','Its body','Colors','Where it lives','What it does','Our questions'];
+const RAW_ALL = `__ANIMALS__`;
+const BUILTIN = RAW_ALL.trim().split('\n').map(line=>{
+  const [name,emoji,tier,codes,fact]=line.split('|');
+  const yes=new Set(codes.trim().split(/\s+/));
+  const attrs={}; BASECODES.forEach(c=>attrs[c]=yes.has(c));
+  if(![...COLOR].some(c=>yes.has(c))) COLOR.forEach(c=>attrs[c]=undefined);
+  return {name,emoji,attrs,fact,tier:['e','n','h'].includes(tier)?tier:'n',learned:false};
+});
+const LEVELS={easy:'Explorer',normal:'Naturalist',hard:'Zoologist'};
+const LEVEL_Q={easy:20,normal:25,hard:30};
+const AI_URL='__AI_URL__';
+const AI_ON=()=>/^https:\/\//.test(AI_URL);
 const BUILTIN_NAMES=new Set(BUILTIN.map(a=>a.name));
 
 // ================= Saving (localStorage + IndexedDB copy) =================
@@ -401,7 +329,7 @@ const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
 const an=s=>/^([aeio]|u(?!ni))/i.test(s)?'an':'a';
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-const MAXQ=20;
+let MAXQ=20;
 const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 function dayKey(d=new Date()){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function yesterdayKey(){ const d=new Date(); d.setDate(d.getDate()-1); return dayKey(d); }
@@ -495,7 +423,7 @@ const BADGES=[
  ['colall','🏆','Complete Book','Collect every sticker in the book'],
  ['daily1','📅','Daily Detective','Solve a daily mystery'],
  ['streak3','🔥','On a Roll','Solve the daily mystery 3 days in a row'],
- ['hard','🧗','Brave Explorer','Find an animal on Hard'],
+ ['hard','🧗','Brave Zoologist','Find a species on the Zoologist level'],
  ['race','🏁','Race Winner','Win a two-player race']
 ];
 function award(id){
@@ -536,7 +464,7 @@ function reveal({title,mood,animal,lines,buttons}){
     <div class="medal pop" aria-hidden="true">${esc(animal.emoji)}</div>
     <h1>${esc(cap(animal.name))}</h1>
     ${lines||''}
-    ${animal.fact?`<div class="fact"><b>Fun fact</b>${esc(animal.fact)}</div>`:''}
+    ${animal.fact?`<div class="fact"><b>Creature power</b>${esc(animal.fact)}</div>`:''}
     <div class="row" style="margin-top:8px">${buttons}</div>
   </div>`;
 }
@@ -551,7 +479,7 @@ function home(){
   const daily=store.stats.dailyDone[dayKey()];
   const foundN=Object.keys(store.found).filter(k=>ANIMALS.find(a=>a.name===k)).length;
   const badgeN=BADGES.filter(b=>store.badges[b[0]]).length;
-  const greet=pick(["Hoo hoo! I'm Hoot. Let's play the Animal Game!","Hi, I'm Hoot! Ready to play?","Hoot here! Think you can stump me today?"]);
+  const greet=pick(["Hoot here. I know ${BUILTIN.length} species. Think you can stump me?","Ready to test your creature knowledge?","Hoo hoo! Pick a species. Any species."]).replace('${BUILTIN.length}',BUILTIN.length);
   screen.innerHTML=`<div class="stack">
     <div class="card">${host('happy',greet,'Pick a way to play.',true)}</div>
     <div class="modes">
@@ -561,7 +489,7 @@ function home(){
       <button class="mode c" id="mC" type="button"><span class="big" aria-hidden="true">👫</span><span><h3>Two players</h3><span class="d">Take turns, race, or stump your sibling.</span></span></button>
     </div>
     <div class="levelrow"><div class="glabel">Level when you guess Hoot's animal</div>
-      <div class="seg" id="level">${['easy','normal','hard'].map(l=>`<button type="button" data-l="${l}" aria-pressed="${store.level===l}">${cap(l)}</button>`).join('')}</div>
+      <div class="seg" id="level">${['easy','normal','hard'].map(l=>`<button type="button" data-l="${l}" aria-pressed="${store.level===l}">${LEVELS[l]}</button>`).join('')}</div>
       <p class="muted" style="font-size:14px" id="levelNote"></p></div>
     <div class="shelf">
       <button class="btn ghost" id="mS" type="button"><span class="ico" aria-hidden="true">📒</span>Sticker book<small>${foundN} of ${ANIMALS.length}</small></button>
@@ -571,7 +499,7 @@ function home(){
     <p class="center"><button class="linkish" id="mL" type="button">Animals and questions I've learned</button> · <button class="linkish" id="mP" type="button">Grown-ups</button></p>
     ${saveFailed?'<p class="center muted">This device isn\'t letting the game save right now. Make sure it\'s opened from the Home Screen icon.</p>':''}
   </div>`;
-  const notes={easy:`Easy: ${BUILTIN.filter(a=>a.tier==='e').length} well-known animals, with helper fading on.`,normal:`Normal: ${BUILTIN.filter(a=>a.tier!=='h').length} animals, with helper fading on.`,hard:`Hard: all ${BUILTIN.length} animals, including dinosaurs and odd ones. Helper starts off.`};
+  const notes={easy:`Explorer: ${BUILTIN.filter(a=>a.tier==='e').length} well-known species, ${LEVEL_Q.easy} tries, helper fading on.`,normal:`Naturalist: ${BUILTIN.filter(a=>a.tier!=='h').length} species, ${LEVEL_Q.normal} tries, helper fading on.`,hard:`Zoologist: all ${BUILTIN.length} species, including deep-sea weirdos and extinct ones. ${LEVEL_Q.hard} tries, helper off.`};
   const setNote=()=>$('#levelNote').textContent=notes[store.level];
   setNote();
   $('#level').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; store.level=b.dataset.l; save(); document.querySelectorAll('#level button').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false')); setNote(); sfx('tap'); };
@@ -585,15 +513,15 @@ function howTo(){
     ${host('happy','Here\'s how to play!')}
     <h3>You think, I guess</h3>
     <div class="steps">
-      <div class="step"><div class="n">1</div><div class="pic" aria-hidden="true">🤫</div><b>Think of an animal</b><p class="muted">Keep it secret in your head.</p></div>
+      <div class="step"><div class="n">1</div><div class="pic" aria-hidden="true">🤫</div><b>Think of a species</b><p class="muted">Be specific: a fennec fox, not just a fox.</p></div>
       <div class="step"><div class="n">2</div><div class="pic" aria-hidden="true">👍 👎</div><b>Answer yes or no</b><p class="muted">Tap "Not sure" if you don't know. Tap Undo if you tap the wrong one.</p></div>
       <div class="step"><div class="n">3</div><div class="pic" aria-hidden="true">🎉</div><b>Did I get it?</b><p class="muted">If you stump me, teach me your animal.</p></div>
     </div>
     <h3>I think, you guess</h3>
     <div class="steps">
-      <div class="step"><div class="n">1</div><div class="pic" aria-hidden="true">💬</div><b>Ask me questions</b><p class="muted">Tap one, or type or say your own, like "Does it have stripes?"</p></div>
+      <div class="step"><div class="n">1</div><div class="pic" aria-hidden="true">💬</div><b>Ask me questions</b><p class="muted">Tap one, or type or say anything, like "Does it use echolocation?"</p></div>
       <div class="step"><div class="n">2</div><div class="pic" aria-hidden="true">🐾</div><b>Watch the animals fade</b><p class="muted">Ones that don't match get faded out.</p></div>
-      <div class="step"><div class="n">3</div><div class="pic" aria-hidden="true">👆</div><b>Tap to guess</b><p class="muted">You get 20 tries. Each question or guess uses one.</p></div>
+      <div class="step"><div class="n">3</div><div class="pic" aria-hidden="true">👆</div><b>Tap to guess</b><p class="muted">You get 20 to 30 tries, depending on the level. Each question or guess uses one.</p></div>
     </div>
     <div class="row"><button class="btn sun" id="hm" type="button">Let's play!</button></div>
   </div>`;
@@ -603,6 +531,7 @@ function howTo(){
 // ================= Mode A: Hoot guesses =================
 let A=null;
 function startA(){
+  MAXQ=30;
   A={asked:[],answers:{},rejected:new Set(),guesses:0,hist:[]};
   screen.innerHTML=`<div class="duo">
     <div class="card">${host('wow',"Think of an animal. Don't tell me!",'Keep it secret in your head. I\'ll try to guess it.',true)}</div>
@@ -627,7 +556,7 @@ function poolA(){
 }
 function bestQuestion(pool){
   let best=null,val=0;
-  for(const q of shuffle(allQ())){ const c=q[0]; if(A.asked.includes(c)) continue;
+  for(const q of shuffle(allQ())){ const c=q[0]; if(A.asked.includes(c)||COLOR.has(c)) continue;
     let y=0,n=0; pool.forEach(a=>{ if(a.attrs[c]===true) y++; else if(a.attrs[c]===false) n++; });
     if(!BASECODES.includes(c)&&(y+n)>0) n=pool.length-y; // taught question: unknown animals probably say no
     const v=Math.min(y,n); if(v>val){val=v;best=c;} }
@@ -702,7 +631,7 @@ function showGuessA(name,fresh){
       lines:`<p class="muted">I needed ${A.asked.length} question${A.asked.length===1?'':'s'} and ${A.guesses} guess${A.guesses===1?'':'es'}.</p>`,
       buttons:`<button class="btn sun" id="again" type="button">Play again</button><button class="btn ghost" id="hm" type="button">Home</button>`});
     $('#again').onclick=()=>go(startA); $('#hm').onclick=()=>go(home);
-    say(`Yay! I guessed it! It's ${an(g.name)} ${g.name}.`+(g.fact?` Fun fact: ${g.fact}`:''));
+    say(`Yes! I guessed it! It's ${an(g.name)} ${g.name}.`+(g.fact?` Creature power: ${g.fact}`:''));
   };
   $('#gN').onclick=()=>{ sfx('no'); snapA({type:'guess',name:g.name}); A.rejected.add(g.name); stepA(); };
   $('#undo').onclick=undoA;
@@ -765,50 +694,113 @@ function learnA(){
 // ================= Typed or spoken questions =================
 const RULES=[
  ['bw',/black (and|&) white/],
- ['me',/\b(eats?|eating) (meat|other animals|animals|fish|bugs|insects|mice|birds)\b|\b(hunt|hunts|hunting|meat|carnivore|prey)\b/],
- ['cl',/\bclimb/],
- ['ln',/\bneck/],
+ ['rg',/\b(regrow|regrows|grow back|grows back|regenerate)/],
+ ['LIVEB',/\blive (babies|young)|\bgives? birth/],
+ ['eg',/\b(lay|lays|laying)\s+eggs?\b|\beggs?\b|\bhatch/],
+ ['OMNI',/\bomnivor/],
+ ['HERB',/\b(herbivor|vegetarian)/],
+ ['ALIVE',/\b(still alive|alive today|alive now|exist today|still around)\b/],
+ ['COLDB',/\bcold[- ]?blooded\b/],
+ ['BACKB',/\b(backbone|spine|vertebrate)\b(?!s? on)/],
+ ['wb',/\bwarm[- ]?blooded\b/],
+ ['ap',/\b(apex predator|top predator|top of the food chain)\b/],
+ ['me',/\b(eats?|eating|like|likes) (meat|other animals|animals|fish|bugs|insects|mice|birds|prey)\b|\b(hunt|hunts|hunting|meat|carnivore|carnivorous|predator)\b/],
+ ['pl',/\b(eat|eats|eating|like|likes|love|loves)\b[\w\s]*\b(plants?|grass|leaves|fruits?|vegetables|nectar|bamboo|seeds?|nuts|berries|bananas?|apples?|hay|algae)\b/],
+ ['cl',/\bclimb/],['ln',/\bneck/],
  ['nl',/\b(no legs|legless|without legs|slither)/],
- ['l4',/\b(four|4) legs/],
- ['LEGN',/\b(two|2|six|6|eight|8) legs\b/],
+ ['l4',/\b(four|4) legs/],['8l',/\b(eight|8) legs/],['6l',/\b(six|6) legs/],['2l',/\b(two|2) legs|\bbipedal\b|\bon two feet/],
  ['LEGS',/\blegs?\b/],
- ['ALIVE',/\b(still alive|alive today|alive now)\b/],
- ['ex',/\b(extinct|dinosaur)/],
- ['oc',/\b(ocean|sea|salt water)\b/],
- ['wa',/\b(live|lives|living) (in|near|by) (the )?(water|lake|river|pond)|\bin (the )?water\b/],
- ['fl',/\b(fly|flies|flying|wings?)\b/],
- ['fu',/\b(fur|furry|fuzzy|fluffy|hair|hairy)\b/],
- ['fe',/\bfeathers?\b/],
- ['sc',/\bscal(e|es|y)\b/],
- ['sh',/\bshell/],
- ['ho',/\b(horn|horns|antler|antlers)\b/],
- ['st',/\bstrip/],
- ['sp',/\bspot/],
- ['bi',/\bbirds?\b/],
- ['ma',/\bmammal/],
- ['re',/\breptile/],
- ['am',/\bamphibian/],
- ['in',/\b(insect|insects|bug|bugs)\b/],
- ['fi',/\bfish\b/],
- ['pe',/\bpets?\b/],
- ['fa',/\b(farm|barn)\b/],
- ['af',/\b(africa|african|savanna)\b/],
- ['co',/\b(cold|snow|snowy|ice|icy|arctic|antarctica)\b/],
- ['jg',/\b(forest|jungle|woods|rainforest|trees?)\b/],
- ['ni',/\b(night|nighttime|nocturnal)\b/],
- ['ju',/\b(jump|jumps|hop|hops|hopping|jumping)\b/],
+ ['ex',/\b(extinct|prehistoric)/],
+ ['dp',/\bdeep (sea|ocean|water)|\bbottom of the (sea|ocean)|\babyss/],
+ ['fw',/\bfresh ?water|\b(river|rivers|lake|lakes|pond|ponds|stream|swamp|swamps)\b/],
+ ['oc',/\b(ocean|oceans|sea|seas|salt ?water|marine|reef)\b/],
+ ['wa',/\b(live|lives|living) (in|near|by) (the )?water|\bin (the )?water\b|\baquatic\b/],
+ ['sw',/\bswim/],['gli',/\bglid/],
+ ['wg',/\bwings?\b/],['fl',/\b(fly|flies|flying)\b/],
+ ['lf',/\b(long|shaggy|fluffy|thick) (fur|hair|coat)|\bshaggy|\bfluffy/],
+ ['fu',/\b(fur|furry|fuzzy|hair|hairy)\b/],
+ ['fe',/\bfeathers?\b/],['sc',/\bscal(e|es|y)\b/],['sh',/\bshell/],
+ ['ho',/\b(horn|horns|antler|antlers)\b/],['tk',/\btusks?\b/],['tr',/\btrunk/],['mn',/\bmane\b/],['hm',/\bhump/],['po',/\bpouch/],
+ ['bk',/\b(beak|beaks|bill)\b/],['cw',/\b(claws?|talons?)\b/],['hf',/\bhoo(f|ves|fs)\b/],['wh',/\bwhiskers?\b/],
+ ['fn',/\b(fins?|flippers?)\b/],['tn',/\b(tentacles?|suckers?)\b/],['spk',/\b(spikes?|spiky|spines|spiny|quills?|prickly)\b/],
+ ['le',/\b(big|long|large|huge) ears\b/],['tl',/\btail/],
+ ['st',/\bstrip/],['sp',/\bspot/],
+ ['ar',/\barachnid/],['cr',/\bcrustacean/],['mo',/\bmollus[kc]/],['iv',/\binvertebrate/],['mr',/\bmarsupial/],
+ ['pr',/\bprimate/],['ro',/\brodent/],
+ ['fel',/\b(cat family|feline|kind of cat|type of cat)\b/],['can',/\b(dog family|canine|kind of dog|type of dog)\b/],
+ ['bi',/\bbirds?\b/],['ma',/\bmammal/],['re',/\breptile/],['am',/\bamphibian/],['in',/\b(insect|insects|bug|bugs)\b/],['fi',/\bfish\b/],
+ ['pe',/\bpets?\b/],['fa',/\b(farm|barn|ranch)\b/],
+ ['af',/\bafrica/],['as',/\b(asia|asian|china|india|japan|indonesia|russia|himalaya)/],['eu',/\b(europe|european)/],
+ ['sa',/\b(south america|amazon|brazil|andes|peru)\b/],['na',/\b(north america|united states|usa|canada|mexico|alaska)\b|(?<!south )\bamerica\b/],
+ ['au',/\b(australia|new zealand|oceania|tasmania)\b/],['an',/\b(antarctica|antarctic|southern ocean|south pole)\b/],['ac',/\b(arctic|north pole)\b/],
+ ['co',/\b(cold|snow|snows|snowy|ice|icy|freezing)\b/],['rf',/\brain ?forest/],['jg',/\b(forest|jungle|woods|trees?)\b/],['ds',/\bdesert/],
+ ['sv',/\b(savanna|savannah|grassland|plains|prairie)\b/],['mt',/\bmountain/],['ug',/\b(underground|burrow|burrows|tunnel|tunnels|dig|digs)\b/],['is',/\bisland/],
+ ['ni',/\b(night|nighttime|nocturnal)\b/],['ju',/\b(jump|jumps|hop|hops|hopping|jumping|leap)\b/],['fs',/\b(fast|speed|speedy|quick)\b/],
+ ['vn',/\b(venom|venomous|sting|stings|stinger)\b/],['po2',/\b(poison|poisonous|toxic)\b/],['el',/\b(electric|electricity|shock)\b/],
+ ['gl',/\b(glow|glows|light up|bioluminescen)/],['ec',/\b(echolocat|sonar)/],['cm',/\b(camouflage|camo|blend in|blends in)/],['cc',/\bchange (its )?colou?rs?\b|\bchanges colou?r/],
+ ['mi',/\b(mimic|mimics|fake|fakes|pretend|pretends|copy|copies)\b/],['mg',/\bmigrat/],['hb',/\bhibernat|sleep (all|during|through|in the) winter/],
+ ['gp',/\b(group|groups|pack|herd|flock|school|colony|pod|troop|swarm)\b/],['jb',/\b(job|jobs|work for|work with|working)\b/],
+ ['ue',/\blive (over|more than|for|past) (50|fifty|100|a hundred|a long)|\blong ?lived?|\blive a long/],['end',/\b(endangered|threatened|rare)\b/],
+ ['cbr',/\bbrown\b/],['cgy',/\b(gray|grey)\b/],['cwt',/\bwhite\b/],['cbk',/\bblack\b/],['cor',/\borange\b/],['cye',/\b(yellow|golden|gold)\b/],
+ ['cgr',/\bgreen\b/],['cpk',/\bpink\b/],['crd',/\bred\b/],['cbl',/\bblue\b/],['cpu',/\bpurple\b/],
  ['bg',/\b(is it|it's|it is|is) (really |very )?(big|bigger|large|huge|giant|tall|heavy)\b(?! (ears|eyes|teeth|tail|feet|nose|than))|\bbigger than (a |an )?(person|grown|adult|human|me|you|people)/],
- ['sm',/\b(is it|it's|it is|is) (really |very )?(small|smaller|little|tiny)\b(?! (ears|eyes|teeth|tail|feet|nose|than))|\bsmaller than (a )?cat/]
+ ['sm',/\b(is it|it's|it is|is) (really |very )?(small|smaller|little|tiny)\b(?! (ears|eyes|teeth|tail|feet|nose|than))|\bsmaller than (a )?(house )?cat/]
 ];
+const INVERSE={LIVEB:['eg','Does it give birth to live babies?'],LEGS:['nl','Does it have legs?'],ALIVE:['ex','Is it still alive today?'],COLDB:['wb','Is it cold-blooded?'],BACKB:['iv','Does it have a backbone?']};
+const DERIVED={OMNI:['Is it an omnivore?',a=>a.attrs.me&&a.attrs.pl],HERB:['Is it a herbivore?',a=>a.attrs.pl&&!a.attrs.me]};
+const nameRe=re=>a=>re.test(a.name);
+const inList=l=>a=>l.includes(a.name);
+const APES=['chimpanzee','mountain gorilla','bornean orangutan','bonobo','lar gibbon'];
+const GROUP_TESTS={
+ cat:a=>a.attrs.fel===true, 'big cat':inList(['african lion','bengal tiger','leopard','jaguar','snow leopard','cheetah','cougar','saber-toothed cat']),
+ dog:a=>a.attrs.can===true, wolf:a=>/wolf/.test(a.name)&&a.name!=='maned wolf', fox:a=>/fox/.test(a.name)&&!/flying fox/.test(a.name),
+ bear:inList(['polar bear','grizzly bear','giant panda','sun bear','american black bear']), panda:nameRe(/panda/),
+ whale:inList(['blue whale','humpback whale','sperm whale','orca','narwhal','beluga']), dolphin:inList(['bottlenose dolphin','orca']),
+ snake:a=>!!(a.attrs.re&&a.attrs.nl), lizard:a=>!!(a.attrs.re&&a.attrs.l4&&!a.attrs.sh&&!a.attrs.ex)&&!/crocodile|alligator|gharial|caiman|tuatara/.test(a.name),
+ crocodile:a=>/crocodile|gharial/.test(a.name), alligator:a=>/alligator(?! snapping)/.test(a.name), turtle:a=>!!(a.attrs.re&&a.attrs.sh), tortoise:nameRe(/tortoise/),
+ dinosaur:inList(['t. rex','triceratops','velociraptor','spinosaurus','stegosaurus','brachiosaurus','brontosaurus']),
+ shark:a=>/shark/.test(a.name)||a.name==='megalodon', ray:nameRe(/ ray$|stingray/), eel:a=>/eel/.test(a.name)&&a.name!=='electric eel',
+ bee:nameRe(/honeybee|bumblebee/), beetle:nameRe(/beetle|firefly/), butterfly:nameRe(/butterfly/), moth:nameRe(/\bmoth\b/), ant:nameRe(/ ant$|^ant$/),
+ spider:a=>!!a.attrs.ar&&!/scorpion|tick|mite/.test(a.name), tarantula:nameRe(/birdeater|tarantula(?! hawk)/), scorpion:nameRe(/scorpion/),
+ lion:a=>/lion/.test(a.name)&&!/sea lion|lionfish|tamarin/.test(a.name), tiger:a=>/tiger/.test(a.name)&&!/shark|snake/.test(a.name),
+ deer:nameRe(/deer|moose|reindeer/), ape:inList(APES), monkey:a=>!!a.attrs.pr&&!APES.includes(a.name)&&!/lemur|aye-aye|loris|tarsier/.test(a.name),
+ lemur:nameRe(/lemur|aye-aye/), owl:nameRe(/\bowl\b/), eagle:nameRe(/eagle/), penguin:nameRe(/penguin/), parrot:nameRe(/parrot|macaw|kea|kakapo/),
+ hummingbird:nameRe(/hummingbird/), duck:nameRe(/duck/), frog:nameRe(/frog/), toad:nameRe(/toad/), salamander:nameRe(/salamander|axolotl|olm|hellbender/),
+ octopus:nameRe(/octopus/), squid:a=>/squid/.test(a.name)&&a.name!=='vampire squid', jellyfish:nameRe(/jellyfish/), crab:a=>/crab/.test(a.name)&&!/horseshoe/.test(a.name), shrimp:nameRe(/shrimp/),
+ seal:nameRe(/seal\b/), otter:nameRe(/otter/), kangaroo:a=>/kangaroo/.test(a.name)&&!/rat/.test(a.name), squirrel:nameRe(/squirrel/), rabbit:nameRe(/rabbit|cottontail|hare/),
+ mouse:nameRe(/mouse/), rat:nameRe(/\brat\b/), horse:a=>/\bhorse\b|clydesdale|pony/.test(a.name)&&!/seahorse|horseshoe/.test(a.name), cow:nameRe(/\bcow\b/), pig:nameRe(/pig\b|boar|warthog/), goat:nameRe(/goat/), sheep:nameRe(/sheep/), camel:nameRe(/camel/),
+ bat:nameRe(/\bbat\b|flying fox/), rhino:nameRe(/rhinoceros/), elephant:nameRe(/elephant/), zebra:nameRe(/zebra|quagga/), giraffe:nameRe(/giraffe/)
+};
+const ALIAS={hippo:'hippopotamus',rhino:'black rhinoceros','t rex':'t. rex',trex:'t. rex',tyrannosaurus:'t. rex','tyrannosaurus rex':'t. rex','killer whale':'orca',
+ 'koala bear':'koala',grizzly:'grizzly bear',komodo:'komodo dragon',hammerhead:'great hammerhead shark','hammerhead shark':'great hammerhead shark','honey bee':'western honeybee',honeybee:'western honeybee',
+ raptor:'velociraptor',starfish:'sunflower sea star','wooly mammoth':'woolly mammoth',mammoth:'woolly mammoth','puffer fish':'white-spotted pufferfish',pufferfish:'white-spotted pufferfish',
+ 'clown fish':'ocellaris clownfish',clownfish:'ocellaris clownfish','great white':'great white shark','black widow':'southern black widow',orangutan:'bornean orangutan',gorilla:'mountain gorilla',
+ chimp:'chimpanzee','sea lion':'california sea lion','black bear':'american black bear','gray squirrel':'eastern gray squirrel','grey squirrel':'eastern gray squirrel',cottontail:'eastern cottontail',
+ peacock:'indian peafowl',peafowl:'indian peafowl',wildebeest:'blue wildebeest',gnu:'blue wildebeest',warthog:'common warthog',baboon:'olive baboon','river otter':'north american river otter',
+ ladybug:'seven-spot ladybug',ladybird:'seven-spot ladybug',rattlesnake:'western diamondback rattlesnake',stingray:'southern stingray','mountain lion':'cougar',puma:'cougar',panther:'cougar',
+ 'whitetail deer':'white-tailed deer','brown bear':'grizzly bear','sea horse':'lined seahorse',seahorse:'lined seahorse','snow monkey':'japanese macaque',caribou:'reindeer',croc:'saltwater crocodile',gator:'american alligator',bunny:'eastern cottontail',mallard:'mallard duck',hog:'domestic pig','duck billed platypus':'platypus','black panther':'leopard','pit bull terrier':'pit bull',husky:'siberian husky'};
 function understand(text){
   const t=' '+text.toLowerCase().replace(/[^a-z0-9.\s'&-]/g,' ').replace(/\s+/g,' ')+' ';
   // A guess, like "is it a lion" or just "lion"?
   const board=B?B.board:ANIMALS;
   const byLen=[...board].sort((a,b)=>b.name.length-a.name.length);
+  if(/\b(more|fewer|less) than\b/.test(t)||/\b(carnivore|herbivore|omnivore|meat|plants)\b.*\bor\b.*\b(carnivore|herbivore|omnivore|meat|plants)\b/.test(t)||/madagascar|galapagos|borneo|sumatra/.test(t)) return null;
   const g=t.trim().replace(/[?!.]+$/,'').match(/^(?:is it|it's|it is|its|is that|i think it's|i think it is|i think its|i guess|my guess is|i guess it's|guess)?\s*(?:an?|the)?\s*(.+)$/);
-  const cand=g?g[1].trim():'';
+  const norm=x=>x.toLowerCase().replace(/-/g,' ');
+  const cand=g?norm(g[1].trim()):'';
   if(cand&&!/\b(than|like|as|or|and|size)\b/.test(cand)){
-    for(const a of byLen){ const n=a.name.toLowerCase(); if(cand===n||cand===n+'s'||cand===n+'es') return {guess:a.name}; }
+    const single1=cand.replace(/s$/,''), single2=cand.replace(/es$/,'');
+    const single=GROUP_TESTS[single1]||ANIMALS.some(a=>a.name===single1)||ALIAS[single1]?single1:single2;
+    const nameOf=c=>{ const al=ALIAS[c]; if(al&&ANIMALS.some(a=>a.name===al)) return al; const hit=ANIMALS.find(a=>norm(a.name)===c); return hit?hit.name:null; };
+    const named=nameOf(cand)||nameOf(single);
+    if(named) return board.some(a=>a.name===named)?{guess:named}:{offboard:named};
+    if(cand.split(' ').length>=2){ const st=board.filter(a=>norm(a.name).startsWith(cand+' ')); if(st.length===1) return {guess:st[0].name}; }
+    const gk=GROUP_TESTS[cand]?cand:GROUP_TESTS[single]?single:null;
+    if(gk) return {gtest:gk};
+    const lastW=cand.split(' ').pop(), lastS=lastW.replace(/s$/,'');
+    if(cand.split(' ').length>=2&&cand.split(' ').length<=3&&!/\b(does|do|can|is|it|has|have|will|eat|eats|hunt|hunts|like|likes|chase|chases|live|lives|look|looks|kill|kills|fight|fights|catch|catches)\b/.test(cand)&&(GROUP_TESTS[lastW]||GROUP_TESTS[lastS])) return {gtest:GROUP_TESTS[lastW]?lastW:lastS};
+    const multi=cand.split(' ').length>=2;
+    if(/^[a-z' ]{3,}$/.test(cand)&&(multi||!RULES.some(([,re])=>re.test(' '+cand+' ')))&&board.some(a=>norm(a.name).endsWith(' '+cand)||norm(a.name).endsWith(' '+single))) return {group:board.some(a=>norm(a.name).endsWith(' '+cand))?cand:single};
   }
   // One of the kids' own questions?
   const words=s=>s.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).filter(w=>w.length>3&&!['does','have','that','live','with','your','they','what','this'].includes(w));
@@ -841,8 +833,9 @@ function startB(opts){
   const board=opts.daily?BUILTIN.filter(a=>a.tier!=='h').map(a=>ANIMALS.find(x=>x.name===a.name)):levelAnimals();
   const secret=opts.secret||pick(board);
   if(!board.includes(secret)) board.push(secret);
+  MAXQ=opts.daily?25:LEVEL_Q[store.level];
   B={secret,board:[...board].sort((a,b)=>a.name.localeCompare(b.name)),asked:{},used:0,wrong:new Set(),last:null,mood:'idle',
-     helper:opts.daily?true:store.level!=='hard',opts,wasted:0,final:false,level:store.level,hints:0};
+     helper:opts.daily?true:store.level!=='hard',opts,wasted:0,final:false,level:store.level,hints:0,open:new Set(['What kind']),filter:'',freeLog:[],busy:false};
   renderB();
   const tp=opts.tp, race=opts.race;
   const who=tp?tp.names[tp.turn]:race?race.names[race.turn]:opts.stump?opts.stump.guesser:null;
@@ -855,12 +848,13 @@ function renderB(keepScroll){
   const y=window.scrollY;
   const qs=allQ();
   const groupsHtml=GROUPS.map(g=>{ const list=qs.filter(q=>q[2]===g); if(!list.length) return '';
-    return `<div><div class="glabel">${g}</div><div class="chips">${list.map(q=>{
+    const done=list.filter(q=>q[0] in B.asked).length;
+    return `<details class="qgroup" data-g="${esc(g)}" ${B.open.has(g)?'open':''}><summary><span>${g}</span><span class="muted">${done?done+' asked · ':''}${list.length}</span></summary><div class="chips">${list.map(q=>{
       const has=q[0] in B.asked; const v=B.asked[q[0]];
       const cls=!has?(B.final?'locked':''):v===true?'yes':v===false?'no':'idk';
       const tag=!has?'':v===true?'Yes':v===false?'No':'Not sure';
       return `<button type="button" class="chip ${cls}" data-q="${esc(q[0])}" ${has||B.final?'disabled':''}>${esc(q[1])}${has?`<span class="tag">· ${tag}</span>`:''}</button>`;
-    }).join('')}</div></div>`; }).join('');
+    }).join('')}</div></details>`; }).join('');
   const left=matching();
   const boardHtml=B.board.map(a=>{ const w=B.wrong.has(a.name); const out=!w&&B.helper&&!consistent(a);
     return `<button type="button" class="tile${w?' wrong':''}${out?' out':''}" data-n="${esc(a.name)}" ${w?'disabled':''} aria-label="Guess ${esc(a.name)}${w?', already guessed':out?', does not match':''}"><span class="e" aria-hidden="true">${esc(a.emoji)}</span>${esc(a.name)}</button>`; }).join('');
@@ -881,9 +875,10 @@ function renderB(keepScroll){
             <form class="askbox" id="askForm">
               <input type="text" id="askIn" autocomplete="off" maxlength="100" placeholder="${B.final?'Make your final guess':'Does it have stripes?'}">
               ${SR?`<button type="button" class="mic" id="micBtn" aria-label="Say your question">🎤</button>`:''}
-              <button class="btn small" type="submit">Ask</button>
+              <button class="btn small" type="submit" ${B.busy?'disabled':''}>Ask</button>
             </form>
-            <p class="muted" style="font-size:14px;margin-top:6px">${SR?'Type it, or tap 🎤 and say it.':'Type it. You can also tap the microphone on the keyboard to say it.'} You can guess this way too: "Is it a lion?"</p>
+            <p class="muted" style="font-size:14px;margin-top:6px">${SR?'Type it, or tap 🎤 and say it.':'Type it. You can also tap the microphone on the keyboard to say it.'} Ask anything${AI_ON()?'':' about its body, home or behavior'}. You can guess this way too: "Is it a pangolin?"</p>
+            ${B.freeLog.length?`<div class="freelog">${B.freeLog.slice(0,6).map(f=>`<div><span class="tagx ${f.a===true?'yes':f.a===false?'no':'idk'}">${f.a===true?'Yes':f.a===false?'No':'?'}</span> ${esc(f.q)}</div>`).join('')}</div>`:''}
           </div>
           <div class="sectionhead" style="margin:0"><h3>Or tap a question</h3>
             <button class="btn ghost small" id="hint" type="button" ${canHint?'':'disabled'}>💡 Hint (uses 2 tries)</button></div>
@@ -892,7 +887,8 @@ function renderB(keepScroll){
       </div>
       <div class="card pinned"><div class="sectionhead"><h3>Tap to guess</h3>
           ${B.level==='hard'&&!o.daily?'':`<label class="toggle" for="helper"><input type="checkbox" id="helper" ${B.helper?'checked':''}>Fade ones that don't match</label>`}</div>
-        ${B.helper?`<p class="muted" style="margin:0 0 10px;font-size:15px">${left} animal${left===1?'':'s'} still match.</p>`:''}
+        <input type="text" id="boardFilter" autocomplete="off" placeholder="Find a species on the board" value="${esc(B.filter)}" style="font-size:17px;padding:10px 14px;margin-bottom:10px" aria-label="Find a species on the board">
+        ${B.helper?`<p class="muted" style="margin:0 0 10px;font-size:15px">${left} species still match.</p>`:''}
         <div class="board" id="board">${boardHtml}</div></div>
     </div>
     <div class="row"><button class="btn ghost small" id="giveup" type="button">I give up</button></div>
@@ -902,30 +898,66 @@ function renderB(keepScroll){
   const h=$('#helper'); if(h) h.onchange=e=>{B.helper=e.target.checked; renderB(true);};
   $('#giveup').onclick=()=>endB(false,true);
   $('#hint').onclick=hintB;
+  document.querySelectorAll('.qgroup').forEach(d=>d.addEventListener('toggle',()=>{ if(d.open) B.open.add(d.dataset.g); else B.open.delete(d.dataset.g); }));
+  const bf=$('#boardFilter');
+  const applyFilter=()=>{ const f=B.filter.trim().toLowerCase(); document.querySelectorAll('#board .tile').forEach(t=>{ t.hidden=!!f&&!t.dataset.n.includes(f); }); };
+  bf.oninput=()=>{ B.filter=bf.value; applyFilter(); }; applyFilter();
   $('#askForm').onsubmit=e=>{ e.preventDefault(); handleTyped($('#askIn').value); };
   const mic=$('#micBtn'); if(mic) mic.onclick=listen;
   if(keepScroll) window.scrollTo(0,y);
 }
 function handleTyped(text){
-  text=(text||'').trim(); if(!text) return;
+  text=(text||'').trim(); if(!text||B.busy) return;
   const r=understand(text);
-  if(!r){ B.mood='think'; B.last={big:"Hmm, I don't know how to answer that one.",small:`You asked: "${esc(text)}". Try asking about its body, where it lives, or what it does.`}; sfx('idk'); say("Hmm, I don't know how to answer that one. Try another question."); renderB(true); return; }
-  if(r.guess) return guessB(r.guess);
+  if(r&&r.guess) return guessB(r.guess);
   if(B.final){ B.last={big:'Time for your final guess!',small:'Tap an animal, or type "Is it a…?"'}; renderB(true); return; }
-  if(r.code==='LEGS'&&('nl' in B.asked)) r.code='nl';
-  if(r.code==='ALIVE'&&('ex' in B.asked)){ const v=B.asked.ex; B.mood='smug'; B.last={big:v===false?"You already know that! Yes, it's alive today.":v===true?"You already know that! No, it's extinct.":"You already asked, and I wasn't sure.",small:'That one is free.'}; say(B.last.big); renderB(true); return; }
-  if(r.code==='LEGS'){ const x=B.secret.attrs.nl; return answerB('LEGS','Does it have legs?',x===undefined?undefined:!x,text); }
-  if(r.code==='ALIVE'){ const x=B.secret.attrs.ex; return answerB('ALIVE','Is it still alive today?',x===undefined?undefined:!x,text); }
-  if(r.code==='LEGN'){
-    const n=/\b(two|2)\b/.test(text.toLowerCase())?2:/\b(six|6)\b/.test(text.toLowerCase())?6:8; const a=B.secret.attrs;
-    let v;
-    if(n===2) v=(a.bi||a.ex&&!a.l4&&a.re&&B.secret.name==='t. rex'||B.secret.name==='kangaroo')?true:(a.l4||a.nl||a.in)?false:undefined;
-    else if(n===6) v=a.in===true?true:(a.l4||a.bi||a.nl)?false:undefined;
-    else v=['spider','scorpion'].includes(B.secret.name)?true:(a.l4||a.bi||a.nl||a.in)?false:undefined;
-    return answerB('LEGN',`Does it have ${n} legs?`,v,text);
+  if(r&&r.offboard){ B.mood='think'; B.last={big:`The ${esc(r.offboard)} isn't on this level's board.`,small:'That didn\'t use a try. Try another species, or switch levels on the home screen.'}; say(`That one isn't on this level's board.`); renderB(true); return; }
+  if(r&&r.gtest){ const yes=!!GROUP_TESTS[r.gtest](B.secret); return freeAnswer(text,yes,yes?'Now which species exactly?':''); }
+  if(r&&DERIVED[r.code]){ return freeAnswer(text,!!DERIVED[r.code][1](B.secret),''); }
+  if(r&&r.group){ const yes=B.secret.name===r.group||B.secret.name.endsWith(' '+r.group); return freeAnswer(text,yes,yes?'Now which kind exactly? Tap it on the board.':''); }
+  if(!r) return askAI(text);
+  if(INVERSE[r.code]){
+    const [base,qt]=INVERSE[r.code];
+    if(base in B.asked){ const v=B.asked[base]; B.mood='smug'; B.last={big:v===undefined?"You already asked, and I wasn't sure.":`You already know that! ${(v===false)?'Yes':'No'}.`,small:esc(qt)+' That one is free.'}; say(B.last.big); renderB(true); return; }
+    const x=B.secret.attrs[base]; return answerB(r.code,qt,x===undefined?undefined:!x,text);
   }
   if(r.code in B.asked){ const v=B.asked[r.code]; B.mood='smug'; B.last={big:`You already asked that! The answer was ${v===true?'yes':v===false?'no':'"not sure"'}.`,small:esc(QMAP()[r.code][1])}; say(B.last.big); renderB(true); return; }
   askB(r.code,text);
+}
+let aiTok=0;
+async function askAI(text){
+  if(!AI_ON()){ B.mood='think'; B.last={big:"Hmm, I don't know how to answer that one.",small:`You asked: "${esc(text)}". That didn't use a try. Try asking about its body, where it lives, or what it does.`}; sfx('idk'); say("Hmm, I don't know how to answer that one."); renderB(true); return; }
+  if(navigator.onLine===false){ B.mood='sad'; B.last={big:"I can only answer my own questions offline.",small:'That didn\'t use a try. Tap one of my questions, or connect to Wi-Fi.'}; renderB(true); return; }
+  const me=B, tok=++aiTok;
+  B.busy=true; B.mood='think'; B.last={big:'Hmm, let me think about that…',small:`You asked: "${esc(text)}"`}; renderB(true);
+  let j=null;
+  try{
+    const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),15000);
+    const res=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({animal:me.secret.name,question:text.slice(0,160)}),signal:ctl.signal});
+    clearTimeout(t);
+    if(res.ok) j=await res.json();
+  }catch(e){ j=null; }
+  if(B!==me||tok!==aiTok) return;
+  B.busy=false;
+  if(!j||!['yes','no','unsure'].includes(j.answer)){ B.mood='sad'; B.last={big:"I couldn't think of an answer just now.",small:'That didn\'t use a try. Ask again, or tap one of my questions.'}; renderB(true); return; }
+  if(j.correctGuess===true) return guessB(B.secret.name);
+  let reply=String(j.reply||'').replace(/\s+/g,' ').trim().slice(0,160);
+  const nm=B.secret.name.toLowerCase();
+  if(!reply||reply.toLowerCase().includes(nm)||nm.split(' ').some(w=>w.length>4&&reply.toLowerCase().includes(w))) reply='';
+  freeAnswer(text,j.answer==='yes'?true:j.answer==='no'?false:undefined,reply);
+}
+function freeAnswer(text,v,reply){
+  B.used++; B.wasted++;
+  B.freeLog.unshift({q:text.slice(0,100),a:v});
+  B.mood=v===true?'happy':v===false?'smug':'think';
+  sfx(v===true?'yes':v===false?'no':'idk');
+  const head=v===true?'Yes!':v===false?'No!':'Hmm, not exactly.';
+  nextTurn();
+  const who=B.opts.race?` Now it's ${B.opts.race.names[B.opts.race.turn]}'s turn.`:'';
+  B.last={big:esc(head+(reply?' '+reply:'')),small:`You asked: "${esc(text)}"`+esc(who)};
+  if(B.used>=MAXQ){ B.final=true; B.last.small+=' That was your last question. Make one final guess!'; say(head+' '+reply+' That was your last question. Make one final guess!'); }
+  else say(head+' '+reply+who);
+  renderB(true);
 }
 function listen(){
   if(!SR) return;
@@ -947,9 +979,7 @@ function answerB(c,qtext,v,typed){
   const before=matching();
   B.asked[c]=v; B.used++;
   // keep the derived "legs" answer consistent with the board
-  if(c==='LEGS'){ delete B.asked.LEGS; if(v!==undefined) B.asked.nl=!v; }
-  if(c==='ALIVE'){ delete B.asked.ALIVE; if(v!==undefined) B.asked.ex=!v; }
-  if(c==='LEGN'){ delete B.asked.LEGN; }
+  if(INVERSE[c]){ delete B.asked[c]; const base=INVERSE[c][0]; B.asked[base]=v===undefined?undefined:!v; }
   const after=matching(); if(after===before) B.wasted++;
   const reply=v===true?'Yes!':v===false?'No!':"Hmm, I'm not sure about that one.";
   B.mood=v===true?'happy':v===false?'smug':'think';
@@ -963,7 +993,7 @@ function answerB(c,qtext,v,typed){
   renderB(true);
 }
 function hintCode(){
-  const unasked=BASECODES.filter(c=>!(c in B.asked)&&!(c==='nl'&&('LEGS' in B.asked)));
+  const unasked=BASECODES.filter(c=>!(c in B.asked)&&!COLOR.has(c));
   const yes=unasked.filter(c=>B.secret.attrs[c]===true);
   if(yes.length) return pick(yes);
   const def=unasked.filter(c=>B.secret.attrs[c]!==undefined);
@@ -1000,9 +1030,8 @@ function endB(won,gaveUp){
   if(tp){ pts=won?Math.max(1,MAXQ+1-B.used):0; tp.scores[tp.turn]+=pts; tp.rounds[tp.turn]++; }
   if(won){
     unlock(s.name);
-    award('firstfind');
-    if(B.used<=8) award('sleuth8'); if(B.used<=5) award('sleuth5');
-    if(B.wasted===0&&Object.keys(B.asked).length>=2) award('nowaste');
+    if(!o.stump){ award('firstfind'); if(B.used<=8) award('sleuth8'); if(B.used<=5) award('sleuth5'); }
+    if(!o.stump&&B.wasted===0&&Object.keys(B.asked).length>=2) award('nowaste');
     if(B.level==='hard'&&!o.daily) award('hard');
     if(race) award('race');
     sfx('win'); confetti();
@@ -1032,7 +1061,7 @@ function endB(won,gaveUp){
   else if(race){ q('again').onclick=()=>go(()=>startRace(race.names)); q('hm').onclick=()=>go(home); }
   else if(o.stump){ q('again').onclick=()=>go(()=>stumpPick({picker:o.stump.guesser,guesser:o.stump.picker})); q('hm').onclick=()=>go(home); }
   else { if(q('again')) q('again').onclick=()=>go(()=>startB({})); q('hm').onclick=()=>go(home); }
-  say(`${won?(race?winner+' wins! ':'You got it! '):''}It was ${an(s.name)} ${s.name}.`+(s.fact?` Fun fact: ${s.fact}`:''));
+  say(`${won?(race?winner+' wins! ':'You got it! '):''}It was ${an(s.name)} ${s.name}.`+(s.fact?` Creature power: ${s.fact}`:''));
 }
 
 // ================= Two players =================
@@ -1086,10 +1115,12 @@ function stumpPick(roles){
   const list=[...levelAnimals()].sort((a,b)=>a.name.localeCompare(b.name));
   screen.innerHTML=`<div class="card stack">
     ${host('smug',`${esc(roles.picker)}, pick a secret animal!`,`Don't let ${esc(roles.guesser)} see.`)}
+    <input type="text" id="pickFilter" autocomplete="off" placeholder="Find a species" aria-label="Find a species" style="font-size:17px;padding:10px 14px">
     <div class="board" id="pickBoard">${list.map(a=>`<button type="button" class="tile" data-n="${esc(a.name)}"><span class="e" aria-hidden="true">${esc(a.emoji)}</span>${esc(a.name)}</button>`).join('')}</div>
     <div class="row"><button class="btn ghost small" id="hm" type="button">Cancel</button></div>
   </div>`;
   $('#hm').onclick=()=>go(home);
+  $('#pickFilter').oninput=e=>{ const f=e.target.value.trim().toLowerCase(); document.querySelectorAll('#pickBoard .tile').forEach(t=>{ t.hidden=!!f&&!t.dataset.n.includes(f); }); };
   $('#pickBoard').onclick=e=>{ const b=e.target.closest('.tile'); if(!b) return; const a=ANIMALS.find(x=>x.name===b.dataset.n); sfx('tap');
     go(()=>{ screen.innerHTML=`<div class="card qcard stack">
       ${host('wow',`Shh! You picked ${an(a.name)} ${esc(a.name)}.`,`Now pass the iPad to ${esc(roles.guesser)}.`)}
@@ -1113,7 +1144,8 @@ function stickerBook(){
   $('#hm').onclick=()=>go(home);
   $('#book').onclick=e=>{ const b=e.target.closest('.sticker.got'); if(!b) return; const a=ANIMALS.find(x=>x.name===b.dataset.n); sfx('tap');
     const box=$('#stickerInfo'); box.hidden=false;
-    box.innerHTML=`<div class="fact" style="margin:0;max-width:none"><b>${esc(a.emoji+' '+cap(a.name))}</b>${esc(a.fact||'No fun fact yet.')}</div>`;
+    box.innerHTML=`<div class="fact" style="margin:0;max-width:none"><b>${esc(a.emoji+' '+cap(a.name))}</b>${esc(a.fact||'No creature power recorded yet.')}</div>`;
+    try{ box.scrollIntoView({behavior:reduced()?'auto':'smooth',block:'center'}); }catch(err){}
     say(cap(a.name)+'. '+(a.fact||'')); };
 }
 function badgePage(){
