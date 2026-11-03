@@ -1,0 +1,1201 @@
+<title>The Animal Game</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;700;800&display=swap">
+<style>
+/* Layout: one play board; Hoot the owl hosts every screen; chunky toy buttons; on iPad landscape the question/host sits left and the board stays pinned right. Single bright theme on purpose. */
+:root{
+  --bg:#e7f4ec; --card:#ffffff; --ink:#1b2a23; --muted:#56695f; --line:#cfe2d6;
+  --leaf:#1e6a4a; --leaf-dark:#134a33; --leaf-soft:#d6efe1; --sun:#ffc63a; --sun-dark:#d99a12; --sun-soft:#fff2c9;
+  --plum:#6a4b98; --plum-dark:#4a3270; --plum-soft:#ece6f6; --clay:#e46c35; --sky:#d6ecf7;
+  --display:"Baloo 2","Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito","Avenir Next","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--body);font-size:17px;line-height:1.45;overflow-wrap:anywhere;-webkit-tap-highlight-color:transparent;
+  background:radial-gradient(circle at 92% -4%, var(--sun-soft) 0 180px, transparent 181px), var(--bg)}
+#app{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:10px 40px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.logo{font-family:var(--display);font-weight:800;font-size:26px;color:var(--leaf);background:none;border:0;padding:4px 0;cursor:pointer;letter-spacing:-.01em;min-height:44px}
+.logo span{color:var(--plum)}
+.toggles{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font:700 15px var(--body);border:2px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 14px;cursor:pointer;min-height:44px}
+.pill[aria-pressed="true"]{border-color:var(--leaf);background:var(--leaf);color:#fff}
+button:focus-visible,input:focus-visible{outline:3px solid var(--plum);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.1;text-wrap:balance;margin:0}
+h1{font-size:clamp(32px,7vw,52px);font-weight:800}
+h2{font-size:clamp(25px,5vw,34px);font-weight:800}
+h3{font-size:20px;font-weight:700}
+p{margin:0}
+.muted{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--card);border-radius:24px;padding:20px;box-shadow:0 2px 0 var(--line);min-width:0}
+.center{text-align:center}
+/* Buttons */
+.btn{font:800 20px var(--body);border:0;border-radius:18px;min-height:60px;padding:12px 18px;cursor:pointer;color:#fff;background:var(--leaf);box-shadow:0 6px 0 var(--leaf-dark);transition:transform .08s,box-shadow .08s;display:inline-flex;align-items:center;justify-content:center;gap:10px;text-align:center}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--leaf-dark)}
+.btn:disabled{opacity:.45;cursor:default;transform:none}
+.btn.sun{background:var(--sun);color:var(--ink);box-shadow:0 6px 0 var(--sun-dark)}
+.btn.sun:active{box-shadow:0 2px 0 var(--sun-dark)}
+.btn.plum{background:var(--plum);box-shadow:0 6px 0 var(--plum-dark)}
+.btn.plum:active{box-shadow:0 2px 0 var(--plum-dark)}
+.btn.ghost{background:var(--card);color:var(--ink);box-shadow:0 5px 0 var(--line);border:2px solid var(--line)}
+.btn.small{font-size:16px;min-height:46px;padding:8px 14px;border-radius:14px}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.row > .btn{flex:1 1 150px}
+.linkish{background:none;border:0;color:var(--leaf);font:800 16px var(--body);text-decoration:underline;cursor:pointer;padding:8px;min-height:44px}
+/* Hoot */
+.host{display:flex;align-items:center;gap:14px}
+.owlwrap{flex:0 0 auto;width:104px}
+.owl{width:100%;height:auto;display:block;animation:bob 3.2s ease-in-out infinite;transform-origin:50% 90%}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.speech{position:relative;background:var(--sun-soft);border-radius:20px;padding:12px 16px;font:800 20px/1.25 var(--display);flex:1;min-width:0}
+.speech::before{content:"";position:absolute;left:-10px;top:50%;margin-top:-10px;border:10px solid transparent;border-right-color:var(--sun-soft);border-left:0}
+.speech small{display:block;font:700 15px/1.35 var(--body);color:var(--muted);margin-top:2px}
+.host.big .owlwrap{width:140px}
+@media (max-width:440px){.owlwrap{width:78px}.host.big .owlwrap{width:104px}.speech{font-size:18px}}
+/* Home */
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.mode{border:0;text-align:left;cursor:pointer;border-radius:24px;padding:18px 20px;display:flex;align-items:center;gap:16px;color:var(--ink);font:inherit;transition:transform .1s;min-height:96px}
+.mode:active{transform:scale(.98)}
+.mode .big{font-size:44px;line-height:1;flex:0 0 auto}
+.mode h3{font-size:24px}
+.mode span.d{display:block;font-size:15px;color:var(--ink);opacity:.8}
+.mode.a{background:var(--sun);box-shadow:0 7px 0 var(--sun-dark)}
+.mode.b{background:#bfe6cf;box-shadow:0 7px 0 #86c3a0}
+.mode.d{background:#cfe6f5;box-shadow:0 7px 0 #93c2df}
+.mode.c{background:#d9cdf0;box-shadow:0 7px 0 #ab97d6}
+.status{display:inline-block;font:800 13px var(--body);letter-spacing:.06em;text-transform:uppercase;background:#fff;border-radius:999px;padding:2px 10px;margin-top:4px}
+.shelf{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.shelf .btn{flex-direction:column;gap:2px;font-size:17px;min-height:84px;line-height:1.15}
+.shelf .btn .ico{font-size:28px}
+.shelf .btn small{font:700 13px var(--body);opacity:.8}
+@media (max-width:440px){.shelf .btn{font-size:15px}}
+.seg{display:flex;background:var(--card);border-radius:18px;padding:5px;gap:5px;border:2px solid var(--line)}
+.seg button{flex:1;font:800 17px var(--body);border:0;border-radius:13px;min-height:48px;background:transparent;color:var(--ink);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--leaf);color:#fff}
+.levelrow{display:flex;flex-direction:column;gap:6px}
+.glabel{font:800 13px var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+/* Counter */
+.paws{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.paw{width:13px;height:13px;border-radius:50%;background:var(--line)}
+.paw.on{background:var(--sun-dark)}
+.counter{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;font-weight:800}
+.counter b{font-variant-numeric:tabular-nums}
+/* Question (Hoot asks) */
+.duo{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:820px){.duo{grid-template-columns:minmax(0,5fr) minmax(0,6fr);align-items:start}}
+.qcard{text-align:center;padding-block:26px}
+.qnum{font:800 14px var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.qtext{font-family:var(--display);font-weight:800;font-size:clamp(30px,6vw,44px);line-height:1.1;margin:10px auto 6px;max-width:20ch;text-wrap:balance}
+.qhelp{color:var(--muted);max-width:44ch;margin:0 auto}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px}
+.answers .wide{grid-column:1 / -1}
+.thinker{font-size:64px;line-height:1}
+/* Reveal */
+.medal{width:170px;height:170px;border-radius:50%;background:var(--sun);display:grid;place-items:center;font-size:96px;margin:6px auto 4px;box-shadow:0 8px 0 var(--sun-dark)}
+@keyframes pop{0%{transform:scale(.3) rotate(-12deg)}70%{transform:scale(1.08) rotate(4deg)}100%{transform:scale(1)}}
+.pop{animation:pop .5s ease-out}
+.fact{background:var(--sky);border-radius:18px;padding:14px 18px;max-width:52ch;margin:4px auto 0;text-align:left}
+.fact b{display:block;font:800 13px var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--leaf);margin-bottom:2px}
+@media (max-width:420px){.btn{font-size:18px}.medal{width:140px;height:140px;font-size:80px}}
+/* Forms */
+label{font-weight:800;display:block;margin-bottom:6px}
+input[type=text],input[type=number]{width:100%;box-sizing:border-box;font:700 20px var(--body);padding:14px 16px;border-radius:16px;border:2px solid var(--line);background:#fff;color:var(--ink)}
+.emojis{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;max-height:236px;overflow:auto;padding:2px}
+.emo{font-size:30px;height:56px;border-radius:14px;border:2px solid var(--line);background:#fff;cursor:pointer}
+.emo[aria-pressed="true"]{border-color:var(--leaf);background:var(--leaf-soft)}
+.yn{display:flex;gap:10px}
+.yn button{flex:1;font:800 18px var(--body);min-height:52px;border-radius:14px;border:2px solid var(--line);background:#fff;cursor:pointer;color:var(--ink)}
+.yn button[aria-pressed="true"]{border-color:var(--leaf);background:var(--leaf-soft)}
+/* You-guess */
+.play{display:grid;grid-template-columns:1fr;gap:16px}
+@media (min-width:820px){
+  .play{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+  .pinned{box-sizing:border-box;position:sticky;top:calc(env(safe-area-inset-top,0px) + 10px);max-height:calc(100vh - 20px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto}
+}
+.askbox{display:flex;gap:8px}
+.askbox input{flex:1;min-width:0;font-size:18px;padding:12px 14px}
+.askbox .btn{min-height:52px;padding:8px 14px;font-size:17px}
+.mic{flex:0 0 auto;width:56px;border-radius:16px;border:2px solid var(--line);background:#fff;font-size:24px;cursor:pointer}
+.mic.on{background:var(--plum);border-color:var(--plum);color:#fff}
+.groups{display:flex;flex-direction:column;gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{font:700 16px var(--body);text-align:left;border:2px solid var(--line);background:#fff;color:var(--ink);border-radius:14px;padding:9px 12px;cursor:pointer;min-height:44px}
+.chip:disabled{cursor:default}
+.chip.locked{opacity:.5}
+.chip.yes{background:var(--leaf-soft);border-color:var(--leaf);opacity:1}
+.chip.no{background:var(--plum-soft);border-color:var(--plum);opacity:1}
+.chip.idk{background:var(--sun-soft);border-color:var(--sun-dark);opacity:1}
+.chip .tag{font-weight:800;margin-left:6px}
+.board{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px}
+.tile{border:2px solid var(--line);background:#fff;border-radius:16px;padding:8px 4px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;font:700 13px var(--body);color:var(--ink);min-height:80px;transition:opacity .2s}
+.tile .e{font-size:32px;line-height:1.1}
+.tile.out{opacity:.22}
+.tile.wrong{opacity:.22;text-decoration:line-through}
+.toggle{display:flex;align-items:center;gap:10px;font-weight:700;cursor:pointer;min-height:44px;margin:0}
+.toggle input{width:24px;height:24px;accent-color:var(--leaf)}
+.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.turnbar{background:var(--plum);color:#fff;border-radius:18px;padding:10px 16px;font:800 22px var(--display);text-align:center}
+/* Scores */
+.scores{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.score{background:var(--sun-soft);border-radius:18px;padding:14px;text-align:center}
+.score .n{font:800 40px var(--display);font-variant-numeric:tabular-nums;line-height:1}
+.score.turn{outline:3px solid var(--plum)}
+/* Sticker book & badges */
+.book{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px}
+.sticker{border:2px solid var(--line);background:#fff;border-radius:18px;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;font:800 13px var(--body);color:var(--ink);cursor:pointer;min-height:96px}
+.sticker .e{font-size:40px;line-height:1.1}
+.sticker.got{background:var(--sun-soft);border-color:var(--sun-dark);transform:rotate(-1.5deg)}
+.sticker.got:nth-child(even){transform:rotate(1.5deg)}
+.sticker.locked .e{filter:brightness(0);opacity:.18}
+.sticker.locked{color:var(--muted);cursor:default}
+.progress{height:14px;background:var(--line);border-radius:999px;overflow:hidden}
+.progress span{display:block;height:100%;background:var(--leaf);border-radius:999px}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.badge{border-radius:18px;padding:14px 10px;text-align:center;background:#fff;border:2px dashed var(--line)}
+.badge .e{font-size:40px;line-height:1.1}
+.badge.got{background:var(--sun-soft);border:2px solid var(--sun-dark)}
+.badge.no .e{filter:grayscale(1);opacity:.35}
+.badge b{display:block;font:800 16px var(--display)}
+.badge small{display:block;color:var(--muted);font-size:13px;line-height:1.3}
+.learned{display:flex;flex-direction:column;gap:8px}
+.lrow{display:flex;align-items:center;gap:12px;background:#fff;border-radius:16px;padding:10px 14px;border:2px solid var(--line)}
+.lrow .e{font-size:30px}
+.lrow .nm{flex:1;min-width:0;font-weight:800}
+/* How to play */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.step{background:var(--sun-soft);border-radius:20px;padding:16px;text-align:center}
+.step .pic{font-size:54px;line-height:1.1}
+.step .n{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--leaf);color:#fff;font:800 16px var(--body);margin-bottom:6px}
+/* Toast & confetti */
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(140%);background:var(--ink);color:#fff;font:800 18px var(--body);padding:14px 20px;border-radius:18px;z-index:60;transition:transform .35s,visibility .35s;visibility:hidden;max-width:calc(100% - 32px);text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0);visibility:visible}
+.confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+@media (prefers-reduced-motion:reduce){.owl,.pop{animation:none}.btn,.mode,.toast{transition:none}}
+</style>
+
+<div id="app">
+  <header class="top">
+    <button class="logo" id="homeBtn" type="button">The Animal <span>Game</span></button>
+    <div class="toggles">
+      <button class="pill" id="soundBtn" type="button" aria-pressed="true">🔔 Sounds</button>
+      <button class="pill" id="voiceBtn" type="button" aria-pressed="false">🗣️ Read aloud</button>
+    </div>
+  </header>
+  <main id="screen"></main>
+  <div id="live" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+'use strict';
+// ================= Questions =================
+const BASEQ = [
+ ['ma','Is it a mammal?','What kind','Mammals have fur or hair and drink milk when they are babies.'],
+ ['bi','Is it a bird?','What kind'],
+ ['re','Is it a reptile?','What kind','Reptiles have dry, scaly skin, like snakes and lizards.'],
+ ['fi','Is it a fish?','What kind'],
+ ['am','Is it an amphibian, like a frog?','What kind','Amphibians start life in water and can live on land later.'],
+ ['in','Is it a bug or insect?','What kind'],
+ ['ex','Is it extinct?','What kind','Extinct means none are alive anymore, like dinosaurs.'],
+ ['fu','Does it have fur?','Its body'],
+ ['fe','Does it have feathers?','Its body'],
+ ['sc','Does it have scales?','Its body'],
+ ['sh','Does it have a shell?','Its body'],
+ ['bg','Is it bigger than a grown-up?','Its body'],
+ ['sm','Is it smaller than a cat?','Its body'],
+ ['l4','Does it walk on four legs?','Its body'],
+ ['nl','Does it have no legs at all?','Its body'],
+ ['ln','Does it have a long neck?','Its body'],
+ ['ho','Does it have horns or antlers?','Its body'],
+ ['st','Does it have stripes?','Its body'],
+ ['sp','Does it have spots?','Its body'],
+ ['bw','Is it black and white?','Its body'],
+ ['pe','Can it be a pet?','Where it lives'],
+ ['fa','Does it live on a farm?','Where it lives'],
+ ['wa','Does it live in or near water?','Where it lives'],
+ ['oc','Does it live in the ocean?','Where it lives'],
+ ['af','Does it live in Africa?','Where it lives'],
+ ['co','Does it live where it gets cold and snowy?','Where it lives'],
+ ['jg','Does it live in a forest or jungle?','Where it lives'],
+ ['fl','Can it fly?','What it does'],
+ ['me','Does it eat meat?','What it does'],
+ ['ni','Is it awake mostly at night?','What it does'],
+ ['cl','Can it climb trees?','What it does'],
+ ['ju','Does it hop or jump a lot?','What it does']
+];
+const BASECODES = BASEQ.map(q=>q[0]);
+const GROUPS = ['What kind','Its body','Where it lives','What it does','Our questions'];
+
+// ================= Animals: name | emoji | yes-codes | fun fact =================
+const RAW = `dog|🐶|ma fu pe l4 me|Dogs can smell thousands of times better than people can.
+cat|🐱|ma fu pe l4 me cl ju|Cats spend about two-thirds of their lives sleeping.
+horse|🐴|ma fu fa l4 bg|Horses can sleep standing up.
+cow|🐄|ma fu fa l4 bg ho sp bw|A cow has one stomach with four different parts.
+pig|🐷|ma fa l4|Pigs are very smart and can learn their own names.
+sheep|🐑|ma fu fa l4|Sheep can recognize the faces of other sheep and even people.
+goat|🐐|ma fu fa l4 ho ju|Goats have rectangle-shaped pupils that help them see almost all the way around.
+chicken|🐔|bi fe fa|Chickens are distant cousins of dinosaurs like T. rex.
+duck|🦆|bi fe fa wa fl|Duck feathers are so waterproof that water rolls right off.
+rabbit|🐰|ma fu pe l4 ju sm|A happy rabbit jumps and twists in the air. That move is called a binky.
+hamster|🐹|ma fu pe l4 sm ni|Hamsters stuff food in their cheek pouches to carry it home.
+mouse|🐭|ma fu l4 sm ni|Mice squeak to each other with sounds too high for people to hear.
+lion|🦁|ma fu af l4 me bg|A lion's roar can be heard about 5 miles away.
+tiger|🐯|ma fu jg l4 me st bg|No two tigers have exactly the same stripes.
+elephant|🐘|ma af l4 bg|Elephants use their trunks to drink, smell, hug and say hello.
+giraffe|🦒|ma fu af l4 ln sp bg|A giraffe's tongue is about 20 inches long and dark blue-black.
+zebra|🦓|ma fu af l4 st bw bg|A baby zebra can stand up less than an hour after it's born.
+hippo|🦛|ma af l4 bg wa|Hippos can hold their breath underwater for about 5 minutes.
+rhino|🦏|ma af l4 bg ho|A rhino's horn is made of keratin, the same stuff as your fingernails.
+monkey|🐒|ma fu jg cl ju|Some monkeys can hang from branches using just their tails.
+gorilla|🦍|ma fu af jg bg|Gorillas build a fresh nest to sleep in every night.
+bear|🐻|ma fu jg l4 me bg cl|Bears can smell food from miles away.
+polar bear|🐻‍❄️|ma fu co l4 me bg wa oc|A polar bear's fur looks white, but the skin underneath is black.
+panda|🐼|ma fu jg l4 bw bg cl|Pandas spend about 12 hours a day eating bamboo.
+koala|🐨|ma fu jg cl ni|Koalas sleep up to 20 hours a day.
+kangaroo|🦘|ma fu ju|A baby kangaroo is called a joey and grows up in its mom's pouch.
+wolf|🐺|ma fu jg l4 me co ni|Wolves live and hunt in family groups called packs.
+fox|🦊|ma fu jg l4 me ni|Foxes can hear a mouse under the snow and pounce right on it.
+deer|🦌|ma fu jg l4 ho ju|Male deer grow a brand-new set of antlers every year.
+moose|🫎|ma fu co jg l4 ho bg wa|Moose are great swimmers and can dive underwater to eat plants.
+raccoon|🦝|ma fu jg l4 ni cl st|Raccoons feel and wash their food with their nimble front paws.
+squirrel|🐿️|ma fu jg l4 sm cl ju|Squirrels bury nuts and forget many of them, which plants new trees.
+bat|🦇|ma fu fl sm ni me|Bats are the only mammals that can truly fly.
+skunk|🦨|ma fu l4 st bw ni|A skunk stomps its feet as a warning before it sprays.
+hedgehog|🦔|ma l4 sm ni pe me|A hedgehog has about 5,000 to 7,000 spines.
+owl|🦉|bi fe fl ni me jg|Owls can turn their heads almost all the way around.
+eagle|🦅|bi fe fl me|Eagles can spot a rabbit from about 2 miles away.
+penguin|🐧|bi fe co wa oc bw me|Penguins can't fly in the air, but they zoom through the water like they're flying.
+parrot|🦜|bi fe fl pe jg cl|Some parrots can learn to copy hundreds of words.
+flamingo|🦩|bi fe fl ln wa af|Flamingos are pink because of the shrimp and algae they eat.
+swan|🦢|bi fe fl ln wa|Baby swans are called cygnets.
+peacock|🦚|bi fe|Only the boy peafowl, the peacock, has the giant fancy tail.
+shark|🦈|fi sc wa oc me nl bg|A shark can grow and lose thousands of teeth in its life.
+dolphin|🐬|ma wa oc me nl bg|Dolphins call each other with their own special whistles, a lot like names.
+whale|🐋|ma wa oc me nl bg|The blue whale is the biggest animal that has ever lived.
+octopus|🐙|wa oc me|An octopus has three hearts and blue blood.
+goldfish|🐟|fi sc wa pe nl sm|Goldfish can remember things for months, not just a few seconds.
+jellyfish|🪼|wa oc nl|Jellyfish have no brain, no heart and no bones.
+crab|🦀|wa oc sh me sm|Crabs walk sideways.
+seal|🦭|ma fu wa oc co me|Seals use their whiskers to feel fish moving in the water.
+turtle|🐢|re sc sh wa pe l4|A turtle can't leave its shell. The shell is part of its skeleton.
+snake|🐍|re sc nl me jg|Snakes smell with their tongues.
+crocodile|🐊|re sc wa me l4 bg af|Crocodiles have been around since the time of the dinosaurs.
+lizard|🦎|re sc l4 sm pe cl me|Some lizards can drop their tails to escape and grow new ones.
+frog|🐸|am wa ju sm l4 jg me|Frogs drink water through their skin.
+butterfly|🦋|in fl sm|Butterflies taste with their feet.
+bee|🐝|in fl sm st|Honeybees do a wiggle dance to tell other bees where the flowers are.
+ladybug|🐞|in fl sm sp me|A ladybug can eat thousands of tiny bugs called aphids in its life.
+ant|🐜|in sm|Ants can carry many times their own body weight.
+spider|🕷️|sm me ni|Spider silk is stronger than a steel thread of the same thickness.
+snail|🐌|sh sm nl|Snails carry their homes on their backs and leave a slimy trail.
+camel|🐪|ma fu l4 bg af|A camel's hump stores fat, not water.
+llama|🦙|ma fu fa l4 ln|Llamas hum to talk to each other.
+sloth|🦥|ma fu jg cl|Sloths move so slowly that tiny plants grow in their fur.
+leopard|🐆|ma fu af l4 me sp cl|Leopards drag their food up into trees to keep it safe.
+otter|🦦|ma fu wa me|Sea otters hold hands while they sleep so they don't float apart.
+beaver|🦫|ma fu wa jg|A beaver's front teeth never stop growing, so it keeps chewing wood.`;
+const RAW_HARD = `t. rex|🦖|re sc ex me bg|T. rex had teeth about as long as bananas.
+brontosaurus|🦕|re sc ex bg ln l4|Brontosaurus ate plants and had a neck longer than a giraffe is tall.
+woolly mammoth|🦣|ma fu ex bg co l4 ho|Some woolly mammoths were still alive when the Egyptian pyramids were built.
+dodo|🦤|bi fe ex|The dodo was a bird that couldn't fly. It lived on an island called Mauritius.
+bison|🦬|ma fu l4 bg ho co|Bison are the heaviest land animals in North America.
+orangutan|🦧|ma fu jg cl|Orangutans hold big leaves over their heads like umbrellas when it rains.
+badger|🦡|ma fu l4 me ni st bw|Badgers dig big underground homes called setts.
+turkey|🦃|bi fe fa|Only boy turkeys gobble.
+goose|🪿|bi fe fl fa wa|Geese fly in a V shape so the flock uses less energy.
+donkey|🫏|ma fu fa l4|A donkey's loud call is called a bray.
+crow|🐦‍⬛|bi fe fl|Crows are so smart they can use sticks as tools.
+squid|🦑|wa oc me nl|Giant squid have eyes as big as dinner plates.
+lobster|🦞|wa oc sh me|Some lobsters live for more than 50 years.
+shrimp|🦐|wa oc sm|Some shrimp snap their claws so fast it makes a loud popping bubble.
+pufferfish|🐡|fi wa oc sp|A pufferfish gulps water to blow up like a spiky ball.
+scorpion|🦂|sm me ni|Scorpions glow blue-green under ultraviolet light.
+cricket|🦗|in sm ju ni|Crickets chirp by rubbing their wings together.
+beetle|🪲|in fl sm|There are more kinds of beetles than any other animal on Earth.
+mosquito|🦟|in fl sm|Only girl mosquitoes bite.
+earthworm|🪱|sm nl|Earthworms breathe through their skin.
+caterpillar|🐛|in sm|A caterpillar grows up to become a butterfly or a moth.
+water buffalo|🐃|ma l4 bg ho wa fa|Water buffalo roll in mud to stay cool and keep bugs away.
+dove|🕊️|bi fe fl|Doves and pigeons belong to the same bird family.`;
+const EASY = new Set(['dog','cat','horse','cow','pig','sheep','goat','chicken','duck','rabbit','hamster','mouse','lion','tiger','elephant','giraffe','zebra','monkey','bear','panda','penguin','frog','turtle','snake','butterfly','bee','goldfish','shark','dolphin','owl','fox','kangaroo','crocodile','whale','octopus','parrot']);
+function parse(raw,tier){
+  return raw.split('\n').map(line=>{
+    const [name,emoji,codes,fact]=line.split('|');
+    const yes=new Set(codes.trim().split(/\s+/));
+    const attrs={}; BASECODES.forEach(c=>attrs[c]=yes.has(c));
+    return {name,emoji,attrs,fact,tier:tier==='h'?'h':(EASY.has(name)?'e':'n'),learned:false};
+  });
+}
+const BUILTIN=[...parse(RAW,'n'),...parse(RAW_HARD,'h')];
+const BUILTIN_NAMES=new Set(BUILTIN.map(a=>a.name));
+
+// ================= Saving (localStorage + IndexedDB copy) =================
+const EMOJI_CHOICES=['🐾','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🦒','🦘','🦬','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🦙','🐐','🦌','🐕','🐩','🐈','🐓','🦃','🦚','🦜','🦢','🦩','🕊️','🐇','🦝','🦨','🦡','🦫','🦦','🦥','🐁','🐀','🐿️','🦔','🪲','🦗','🕷️','🦂','🦟','🪱','🦭','🪼','🫎','🫏','🪿','🐦‍⬛'];
+const OK_EMOJI=new Set([...EMOJI_CHOICES,...BUILTIN.map(a=>a.emoji)]);
+const cleanAttrs=o=>{ const r={}; if(o&&typeof o==='object') for(const [k,v] of Object.entries(o)) if(/^[a-z0-9]{1,20}$/.test(k)&&typeof v==='boolean') r[k]=v; return r; };
+const LSKEY='animalgame.v2';
+const DEFAULT=()=>({v:2,learned:[],customQ:[],voice:false,sound:true,level:'normal',p1:'',p2:'',found:{},badges:{},
+  stats:{stumps:0,dailyStreak:0,lastDaily:'',dailyDone:{}},writtenAt:0});
+function normalize(o){
+  const d=DEFAULT(); if(!o||typeof o!=='object') return d;
+  const out=Object.assign(d,o); out.stats=Object.assign(DEFAULT().stats,o.stats||{});
+  if(!Array.isArray(out.learned)) out.learned=[]; if(!Array.isArray(out.customQ)) out.customQ=[];
+  if(!out.found||typeof out.found!=='object') out.found={}; if(!out.badges||typeof out.badges!=='object') out.badges={};
+  if(!out.stats.dailyDone||typeof out.stats.dailyDone!=='object') out.stats.dailyDone={};
+  if(!['easy','normal','hard'].includes(out.level)) out.level='normal';
+  out.learned=out.learned.filter(l=>l&&typeof l.name==='string'&&l.name.trim()).map(l=>({name:l.name.trim().toLowerCase().slice(0,40),emoji:OK_EMOJI.has(l.emoji)?l.emoji:'🐾',attrs:cleanAttrs(l.attrs),fact:String(l.fact||'').slice(0,200)}));
+  out.customQ=out.customQ.filter(q=>q&&typeof q.code==='string'&&/^[a-z0-9]{1,20}$/.test(q.code)&&typeof q.text==='string').map(q=>({code:q.code,text:q.text.slice(0,90)}));
+  out.voice=!!out.voice; out.sound=out.sound!==false; out.p1=String(out.p1||'').slice(0,20); out.p2=String(out.p2||'').slice(0,20);
+  return out;
+}
+function readLS(k){ try{ const s=localStorage.getItem(k); return s?JSON.parse(s):null; }catch(e){ return null; } }
+let store=normalize(readLS(LSKEY)||(()=>{ const old=readLS('animalgame.v1'); return old?{learned:old.learned,voice:old.voice,p1:old.p1,p2:old.p2}:null; })());
+let saveFailed=false;
+let idbP=null;
+function idb(){ if(idbP) return idbP; idbP=new Promise((res,rej)=>{ try{ const r=indexedDB.open('animalgame',1); r.onupgradeneeded=()=>r.result.createObjectStore('kv'); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }catch(e){ rej(e); } }); idbP.catch(()=>{ idbP=null; }); return idbP; }
+async function idbGet(){ try{ const db=await idb(); return await new Promise(res=>{ const q=db.transaction('kv').objectStore('kv').get('store'); q.onsuccess=()=>res(q.result||null); q.onerror=()=>res(null); }); }catch(e){ return null; } }
+async function idbPut(v){ try{ const db=await idb(); db.transaction('kv','readwrite').objectStore('kv').put(v,'store'); }catch(e){} }
+function save(){
+  store.writtenAt=Date.now();
+  const json=JSON.stringify(store);
+  try{ localStorage.setItem(LSKEY,json); saveFailed=false; }catch(e){ saveFailed=true; }
+  idbPut(JSON.parse(json));
+}
+addEventListener('pagehide',()=>{ try{ localStorage.setItem(LSKEY,JSON.stringify(store)); }catch(e){} });
+try{ navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }catch(e){}
+
+// ================= Animal list =================
+let ANIMALS=[];
+const allQ=()=>[...BASEQ,...store.customQ.map(q=>[q.code,q.text,'Our questions'])];
+const QMAP=()=>Object.fromEntries(allQ().map(q=>[q[0],q]));
+function rebuild(){
+  const by=new Map(BUILTIN.map(a=>[a.name,{...a,attrs:{...a.attrs}}]));
+  store.learned.forEach(l=>{
+    const base=by.get(l.name);
+    if(base){ Object.assign(base.attrs,l.attrs); if(l.fact) base.fact=l.fact; base.learned=true; }
+    else by.set(l.name,{name:l.name,emoji:l.emoji||'🐾',attrs:{...l.attrs},fact:l.fact||'',tier:'k',learned:true});
+  });
+  ANIMALS=[...by.values()];
+}
+rebuild();
+function levelAnimals(){
+  const L=store.level;
+  return ANIMALS.filter(a=>a.tier==='k'||(L==='easy'?a.tier==='e':L==='normal'?a.tier!=='h':true));
+}
+function upsertLearned(name,patch){
+  let l=store.learned.find(x=>x.name===name);
+  if(!l){ l={name,emoji:'🐾',attrs:{},fact:''}; store.learned.push(l); }
+  if(patch.attrs) Object.assign(l.attrs,patch.attrs);
+  if(patch.emoji) l.emoji=patch.emoji;
+  if(patch.fact) l.fact=patch.fact;
+}
+
+// ================= Helpers =================
+const $=s=>document.querySelector(s);
+const screen=$('#screen');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const an=s=>/^([aeio]|u(?!ni))/i.test(s)?'an':'a';
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const MAXQ=20;
+const reduced=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+function dayKey(d=new Date()){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function yesterdayKey(){ const d=new Date(); d.setDate(d.getDate()-1); return dayKey(d); }
+let navToken=0; // cancels pending timers when the screen changes
+function go(fn){ navToken++; try{speechSynthesis.cancel()}catch(e){} stopListening(); fn(); window.scrollTo(0,0); }
+
+// ---- Voice ----
+function say(text){
+  const lv=document.getElementById('live'); if(lv) lv.textContent=text;
+  if(!store.voice||!('speechSynthesis' in window)) return;
+  try{ speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text.replace(/[\u{1F000}-\u{1FFFF}\u2600-\u27BF]/gu,'')); u.rate=.95; u.pitch=1.15; speechSynthesis.speak(u);}catch(e){}
+}
+// ---- Sounds (made in code, no files) ----
+let AC=null;
+function ac(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ return null; } } if(AC.state==='suspended') AC.resume(); return AC; }
+function tone(f,t0,d,type,vol,f2){ const a=ac(); if(!a) return; const t=a.currentTime+t0; const o=a.createOscillator(),g=a.createGain(); o.type=type||'sine'; o.frequency.setValueAtTime(f,t); if(f2) o.frequency.exponentialRampToValueAtTime(f2,t+d); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(vol||.2,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+d); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+d+.05); }
+const SFX={
+  tap(){tone(700,0,.06,'triangle',.07)},
+  yes(){tone(660,0,.12,'triangle',.2);tone(990,.1,.2,'triangle',.2)},
+  no(){tone(440,0,.38,'sine',.22,150)},
+  idk(){tone(520,0,.1,'triangle',.12);tone(470,.16,.12,'triangle',.12)},
+  drum(){ const a=ac(); if(!a) return; const len=Math.floor(a.sampleRate*.05); const buf=a.createBuffer(1,len,a.sampleRate); const d=buf.getChannelData(0); for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*(1-i/len);
+    for(let k=0;k<22;k++){ const s=a.createBufferSource(); s.buffer=buf; const f=a.createBiquadFilter(); f.type='lowpass'; f.frequency.value=900; const g=a.createGain(); g.gain.value=.06+.2*k/22; s.connect(f); f.connect(g); g.connect(a.destination); s.start(a.currentTime+k*.055); }
+    tone(1200,1.25,.5,'triangle',.08,1100); },
+  win(){[523,659,784,1047].forEach((f,i)=>tone(f,i*.11,.28,'triangle',.18))},
+  lose(){[392,370,349,311].forEach((f,i)=>tone(f,i*.22,.3,'sawtooth',.05))},
+  badge(){[784,988,1319].forEach((f,i)=>tone(f,i*.08,.22,'sine',.15))}
+};
+function sfx(n){ if(store.sound) try{ SFX[n](); }catch(e){} }
+// ---- Confetti ----
+function confetti(){
+  if(reduced()) return;
+  const c=document.createElement('canvas'); c.className='confetti'; document.body.appendChild(c);
+  const r=devicePixelRatio||1, W=c.width=innerWidth*r, H=c.height=innerHeight*r, x=c.getContext('2d');
+  const cols=['#ffc63a','#1e6a4a','#6a4b98','#e46c35','#7cc4e8','#ffffff'];
+  const ps=Array.from({length:150},()=>({x:Math.random()*W,y:-Math.random()*H*.6,vx:(Math.random()-.5)*4*r,vy:(2+Math.random()*4)*r,s:(7+Math.random()*8)*r,a:Math.random()*6,va:(Math.random()-.5)*.3,c:pick(cols)}));
+  const t0=performance.now();
+  (function f(t){ x.clearRect(0,0,W,H); ps.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.05*r;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore();});
+    if(t-t0<3200) requestAnimationFrame(f); else c.remove(); })(t0);
+}
+// ---- Toasts ----
+const toastQ=[]; let toastBusy=false;
+function toast(msg){ toastQ.push(msg); if(!toastBusy) nextToast(); }
+function nextToast(){ const m=toastQ.shift(); const el=$('#toast'); if(!m){ toastBusy=false; return; } toastBusy=true; el.textContent=m; el.classList.add('show'); setTimeout(()=>{ el.classList.remove('show'); setTimeout(nextToast,400); },2600); }
+
+// ================= Hoot the owl =================
+function owl(mood){
+  mood=mood||'idle';
+  const look={idle:[0,0],think:[-3,-4],happy:[0,0],wow:[0,0],smug:[3,1],sad:[0,3]}[mood]||[0,0];
+  const pr=mood==='wow'?7.5:5.5;
+  let eyes='';
+  [[44,62],[76,62]].forEach(([cx,cy],i)=>{
+    if(mood==='happy'){ eyes+=`<path d="M${cx-9} ${cy+2} Q${cx} ${cy-9} ${cx+9} ${cy+2}" fill="none" stroke="#1b2a23" stroke-width="4" stroke-linecap="round"/>`; return; }
+    eyes+=`<circle cx="${cx}" cy="${cy}" r="12" fill="#fff"/><circle cx="${cx+look[0]}" cy="${cy+look[1]}" r="${pr}" fill="#1b2a23"/><circle cx="${cx+look[0]+2}" cy="${cy+look[1]-2}" r="1.8" fill="#fff"/>`;
+    if(mood==='smug') eyes+=`<path d="M${cx-13} ${cy-1} A13 13 0 0 1 ${cx+13} ${cy-1} Z" fill="#b9864f"/>`;
+    if(mood==='sad') eyes+= i===0?`<path d="M${cx-13} ${cy-10} L${cx+12} ${cy-3} L${cx+12} ${cy-14} L${cx-13} ${cy-14} Z" fill="#f4e4c1"/>`:`<path d="M${cx+13} ${cy-10} L${cx-12} ${cy-3} L${cx-12} ${cy-14} L${cx+13} ${cy-14} Z" fill="#f4e4c1"/>`;
+  });
+  const beak=(mood==='wow'||mood==='happy')
+    ? `<path d="M53 73 L67 73 L60 79 Z" fill="#ffc63a"/><path d="M54 80 L66 80 L60 88 Z" fill="#d99a12"/>`
+    : `<path d="M53 73 L67 73 L60 85 Z" fill="#ffc63a"/>`;
+  return `<svg class="owl" viewBox="0 0 120 132" role="img" aria-label="Hoot the owl">
+    <path d="M26 44 L22 18 L44 36 Z" fill="#8a5c33"/><path d="M94 44 L98 18 L76 36 Z" fill="#8a5c33"/>
+    <ellipse cx="60" cy="82" rx="42" ry="46" fill="#a0703f"/>
+    <ellipse cx="22" cy="90" rx="10" ry="24" fill="#8a5c33" transform="rotate(12 22 90)"/><ellipse cx="98" cy="90" rx="10" ry="24" fill="#8a5c33" transform="rotate(-12 98 90)"/>
+    <ellipse cx="60" cy="98" rx="27" ry="27" fill="#ecd3a3"/>
+    <path d="M50 92 q4 4 8 0 M62 92 q4 4 8 0 M55 102 q4 4 8 0" fill="none" stroke="#c9a46a" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="44" cy="62" r="17" fill="#f4e4c1"/><circle cx="76" cy="62" r="17" fill="#f4e4c1"/>
+    ${eyes}${beak}
+    <path d="M48 126 l-4 5 M52 126 v6 M56 126 l4 5 M64 126 l-4 5 M68 126 v6 M72 126 l4 5" stroke="#d99a12" stroke-width="3" stroke-linecap="round"/>
+    <ellipse cx="60" cy="40" rx="44" ry="7" fill="#1e6a4a"/>
+    <path d="M36 40 Q38 16 60 14 Q82 16 84 40 Z" fill="#2a8460"/>
+    <rect x="37" y="32" width="46" height="6" rx="2" fill="#ffc63a"/>
+    <path d="M60 14 l0 6" stroke="#134a33" stroke-width="3"/>
+  </svg>`;
+}
+function host(mood,text,small,big){
+  return `<div class="host${big?' big':''}"><div class="owlwrap">${owl(mood)}</div><div class="speech">${text}${small?`<small>${small}</small>`:''}</div></div>`;
+}
+
+// ================= Collection & badges =================
+const BADGES=[
+ ['firstfind','🔎','First Find','Find Hoot\'s secret animal'],
+ ['sleuth8','⚡','Speedy Sleuth','Find it in 8 tries or fewer'],
+ ['sleuth5','🚀','Super Sleuth','Find it in 5 tries or fewer'],
+ ['nowaste','🎯','No Wasted Questions','Win where every question ruled out an animal'],
+ ['stump1','😵','Stumper','Stump Hoot once'],
+ ['stump5','🧠','Master Stumper','Stump Hoot 5 times'],
+ ['teacher','✏️','Teacher','Teach Hoot a new question'],
+ ['col10','📗','Collector','Collect 10 stickers'],
+ ['col25','📘','Super Collector','Collect 25 stickers'],
+ ['colall','🏆','Complete Book','Collect every sticker in the book'],
+ ['daily1','📅','Daily Detective','Solve a daily mystery'],
+ ['streak3','🔥','On a Roll','Solve the daily mystery 3 days in a row'],
+ ['hard','🧗','Brave Explorer','Find an animal on Hard'],
+ ['race','🏁','Race Winner','Win a two-player race']
+];
+function award(id){
+  if(store.badges[id]) return;
+  store.badges[id]=dayKey(); save();
+  const b=BADGES.find(x=>x[0]===id); toast(`${b[1]} New badge: ${b[2]}!`); setTimeout(()=>sfx('badge'),500);
+}
+function unlock(name){
+  if(!ANIMALS.find(a=>a.name===name)) return false;
+  const isNew=!store.found[name];
+  if(isNew){ store.found[name]=dayKey(); save(); toast(`📒 New sticker: ${cap(name)}!`); }
+  const n=Object.keys(store.found).filter(k=>ANIMALS.find(a=>a.name===k)).length;
+  if(n>=10) award('col10'); if(n>=25) award('col25');
+  if(BUILTIN.every(a=>store.found[a.name])) award('colall');
+  return isNew;
+}
+
+// ================= Header =================
+function setToggles(){
+  const v=$('#voiceBtn'),s=$('#soundBtn');
+  v.setAttribute('aria-pressed',store.voice?'true':'false'); v.textContent=store.voice?'🗣️ Read aloud: on':'🗣️ Read aloud: off';
+  s.setAttribute('aria-pressed',store.sound?'true':'false'); s.textContent=store.sound?'🔔 Sounds: on':'🔕 Sounds: off';
+}
+$('#voiceBtn').onclick=()=>{ store.voice=!store.voice; save(); setToggles(); if(store.voice) say("Hoo hoo! I'll read things out loud."); else try{speechSynthesis.cancel()}catch(e){} };
+$('#soundBtn').onclick=()=>{ store.sound=!store.sound; save(); setToggles(); sfx('yes'); };
+$('#homeBtn').onclick=()=>go(home);
+document.addEventListener('click',e=>{ if(e.target.closest('button')) { ac(); } },{capture:true});
+setToggles();
+
+function counter(used,label){
+  let h=`<div class="counter"><span>${label||'Questions'}: <b>${used}</b> of ${MAXQ}</span><div class="paws" aria-hidden="true">`;
+  for(let i=0;i<MAXQ;i++) h+=`<span class="paw${i<used?' on':''}"></span>`;
+  return h+'</div></div>';
+}
+function reveal({title,mood,animal,lines,buttons}){
+  screen.innerHTML=`<div class="card center stack">
+    ${host(mood||'happy',esc(title))}
+    <div class="medal pop" aria-hidden="true">${esc(animal.emoji)}</div>
+    <h1>${esc(cap(animal.name))}</h1>
+    ${lines||''}
+    ${animal.fact?`<div class="fact"><b>Fun fact</b>${esc(animal.fact)}</div>`:''}
+    <div class="row" style="margin-top:8px">${buttons}</div>
+  </div>`;
+}
+
+// ================= Home =================
+function dailyAnimal(){
+  const list=BUILTIN.filter(a=>a.tier!=='h').map(a=>a.name).sort();
+  const k=dayKey(); let h=2166136261; for(const ch of k){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619)>>>0; }
+  const name=list[h%list.length]; return ANIMALS.find(a=>a.name===name);
+}
+function home(){
+  const daily=store.stats.dailyDone[dayKey()];
+  const foundN=Object.keys(store.found).filter(k=>ANIMALS.find(a=>a.name===k)).length;
+  const badgeN=BADGES.filter(b=>store.badges[b[0]]).length;
+  const greet=pick(["Hoo hoo! I'm Hoot. Let's play the Animal Game!","Hi, I'm Hoot! Ready to play?","Hoot here! Think you can stump me today?"]);
+  screen.innerHTML=`<div class="stack">
+    <div class="card">${host('happy',greet,'Pick a way to play.',true)}</div>
+    <div class="modes">
+      <button class="mode a" id="mA" type="button"><span class="big" aria-hidden="true">🤔</span><span><h3>You think, I guess</h3><span class="d">Think of an animal. I'll ask questions.</span></span></button>
+      <button class="mode b" id="mB" type="button"><span class="big" aria-hidden="true">🔍</span><span><h3>I think, you guess</h3><span class="d">Find my secret animal.</span></span></button>
+      <button class="mode d" id="mD" type="button"><span class="big" aria-hidden="true">📅</span><span><h3>Daily mystery</h3><span class="d">Same animal for everyone today.</span><span class="status">${daily?(daily.won?`Solved in ${daily.tries} tries`:'Done for today'):'New today'}</span></span></button>
+      <button class="mode c" id="mC" type="button"><span class="big" aria-hidden="true">👫</span><span><h3>Two players</h3><span class="d">Take turns, race, or stump your sibling.</span></span></button>
+    </div>
+    <div class="levelrow"><div class="glabel">Level when you guess Hoot's animal</div>
+      <div class="seg" id="level">${['easy','normal','hard'].map(l=>`<button type="button" data-l="${l}" aria-pressed="${store.level===l}">${cap(l)}</button>`).join('')}</div>
+      <p class="muted" style="font-size:14px" id="levelNote"></p></div>
+    <div class="shelf">
+      <button class="btn ghost" id="mS" type="button"><span class="ico" aria-hidden="true">📒</span>Sticker book<small>${foundN} of ${ANIMALS.length}</small></button>
+      <button class="btn ghost" id="mBd" type="button"><span class="ico" aria-hidden="true">🏅</span>Badges<small>${badgeN} of ${BADGES.length}</small></button>
+      <button class="btn ghost" id="mH" type="button"><span class="ico" aria-hidden="true">❓</span>How to play<small>3 quick steps</small></button>
+    </div>
+    <p class="center"><button class="linkish" id="mL" type="button">Animals and questions I've learned</button> · <button class="linkish" id="mP" type="button">Grown-ups</button></p>
+    ${saveFailed?'<p class="center muted">This device isn\'t letting the game save right now. Make sure it\'s opened from the Home Screen icon.</p>':''}
+  </div>`;
+  const notes={easy:`Easy: ${BUILTIN.filter(a=>a.tier==='e').length} well-known animals, with helper fading on.`,normal:`Normal: ${BUILTIN.filter(a=>a.tier!=='h').length} animals, with helper fading on.`,hard:`Hard: all ${BUILTIN.length} animals, including dinosaurs and odd ones. Helper starts off.`};
+  const setNote=()=>$('#levelNote').textContent=notes[store.level];
+  setNote();
+  $('#level').onclick=e=>{ const b=e.target.closest('button'); if(!b) return; store.level=b.dataset.l; save(); document.querySelectorAll('#level button').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false')); setNote(); sfx('tap'); };
+  $('#mA').onclick=()=>go(startA); $('#mB').onclick=()=>go(()=>startB({})); $('#mD').onclick=()=>go(startDaily); $('#mC').onclick=()=>go(twoMenu);
+  $('#mS').onclick=()=>go(stickerBook); $('#mBd').onclick=()=>go(badgePage); $('#mH').onclick=()=>go(howTo); $('#mL').onclick=()=>go(learnedList); $('#mP').onclick=()=>go(grownGate);
+  say(greet);
+}
+
+function howTo(){
+  screen.innerHTML=`<div class="card stack">
+    ${host('happy','Here\'s how to play!')}
+    <h3>You think, I guess</h3>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div class="pic" aria-hidden="true">🤫</div><b>Think of an animal</b><p class="muted">Keep it secret in your head.</p></div>
+      <div class="step"><div class="n">2</div><div class="pic" aria-hidden="true">👍 👎</div><b>Answer yes or no</b><p class="muted">Tap "Not sure" if you don't know. Tap Undo if you tap the wrong one.</p></div>
+      <div class="step"><div class="n">3</div><div class="pic" aria-hidden="true">🎉</div><b>Did I get it?</b><p class="muted">If you stump me, teach me your animal.</p></div>
+    </div>
+    <h3>I think, you guess</h3>
+    <div class="steps">
+      <div class="step"><div class="n">1</div><div class="pic" aria-hidden="true">💬</div><b>Ask me questions</b><p class="muted">Tap one, or type or say your own, like "Does it have stripes?"</p></div>
+      <div class="step"><div class="n">2</div><div class="pic" aria-hidden="true">🐾</div><b>Watch the animals fade</b><p class="muted">Ones that don't match get faded out.</p></div>
+      <div class="step"><div class="n">3</div><div class="pic" aria-hidden="true">👆</div><b>Tap to guess</b><p class="muted">You get 20 tries. Each question or guess uses one.</p></div>
+    </div>
+    <div class="row"><button class="btn sun" id="hm" type="button">Let's play!</button></div>
+  </div>`;
+  $('#hm').onclick=()=>go(home);
+}
+
+// ================= Mode A: Hoot guesses =================
+let A=null;
+function startA(){
+  A={asked:[],answers:{},rejected:new Set(),guesses:0,hist:[]};
+  screen.innerHTML=`<div class="duo">
+    <div class="card">${host('wow',"Think of an animal. Don't tell me!",'Keep it secret in your head. I\'ll try to guess it.',true)}</div>
+    <div class="card qcard stack"><div class="thinker" aria-hidden="true">🤫</div><h2>Got one in your head?</h2>
+      <div class="row"><button class="btn sun" id="ready" type="button">I'm ready!</button></div></div>
+  </div>`;
+  $('#ready').onclick=()=>{ sfx('tap'); stepA(); };
+  say("Think of an animal. Don't tell me! Tap I'm ready when you have one.");
+}
+function snapA(view){ A.hist.push({asked:[...A.asked],answers:{...A.answers},rejected:[...A.rejected],guesses:A.guesses,view}); }
+function undoA(){
+  const s=A.hist.pop(); if(!s) return;
+  A.asked=s.asked; A.answers=s.answers; A.rejected=new Set(s.rejected); A.guesses=s.guesses;
+  navToken++; sfx('tap');
+  if(s.view.type==='ask') askA(s.view.c); else showGuessA(s.view.name);
+}
+function mismatch(a){ let m=0; for(const c of A.asked){ const v=A.answers[c]; if(v===undefined) continue; const av=a.attrs[c]; if(av!==undefined&&av!==v) m++; } return m; }
+function poolA(){
+  const alive=ANIMALS.filter(a=>!A.rejected.has(a.name)); if(!alive.length) return [];
+  const sc=alive.map(a=>({a,m:mismatch(a)})); const min=Math.min(...sc.map(s=>s.m));
+  return sc.filter(s=>s.m===min).map(s=>s.a);
+}
+function bestQuestion(pool){
+  let best=null,val=0;
+  for(const q of shuffle(allQ())){ const c=q[0]; if(A.asked.includes(c)) continue;
+    let y=0,n=0; pool.forEach(a=>{ if(a.attrs[c]===true) y++; else if(a.attrs[c]===false) n++; });
+    if(!BASECODES.includes(c)&&(y+n)>0) n=pool.length-y; // taught question: unknown animals probably say no
+    const v=Math.min(y,n); if(v>val){val=v;best=c;} }
+  return best;
+}
+function hootChat(n,first){
+  if(first) return ['happy','Here we go!'];
+  if(n>15) return ['idle',pick(['Hmm, let\'s see…','So many animals it could be!'])];
+  if(n>5) return ['think',pick(['I\'m narrowing it down…','Getting warmer…'])];
+  if(n>1) return ['smug',`Ooh, I've got ${n} animals in mind…`];
+  return ['smug','I think I know!'];
+}
+function stepA(){
+  const pool=poolA();
+  if(!pool.length||A.guesses>=3) return learnA();
+  if(A.asked.length>=MAXQ||pool.length===1) return guessA(pool);
+  const c=bestQuestion(pool); if(!c) return guessA(pool);
+  askA(c);
+}
+function askA(c){
+  const q=QMAP()[c]; const n=A.asked.length+1; const pool=poolA();
+  const [mood,chat]=hootChat(pool.length,A.asked.length===0);
+  screen.innerHTML=`<div class="duo">
+    <div class="card stack">${host(mood,esc(chat))}${counter(A.asked.length)}</div>
+    <div class="card qcard">
+      <div class="qnum">Question ${n}</div>
+      <div class="qtext">${esc(q[1])}</div>
+      ${q[3]?`<p class="qhelp">${esc(q[3])}</p>`:''}
+      <div class="answers">
+        <button class="btn" id="aY" type="button">👍 Yes</button>
+        <button class="btn plum" id="aN" type="button">👎 No</button>
+        <button class="btn ghost wide" id="aU" type="button">🤷 Not sure</button>
+      </div>
+      <div class="row" style="margin-top:18px">
+        <button class="btn ghost small" id="undo" type="button" ${A.hist.length?'':'disabled'}>↩️ Undo</button>
+        <button class="btn ghost small" id="quitA" type="button">Stop game</button>
+      </div>
+    </div></div>`;
+  const ans=(v,s)=>{ sfx(s); snapA({type:'ask',c}); A.asked.push(c); if(v!==null) A.answers[c]=v; stepA(); };
+  $('#aY').onclick=()=>ans(true,'yes'); $('#aN').onclick=()=>ans(false,'no'); $('#aU').onclick=()=>ans(null,'idk');
+  $('#undo').onclick=undoA; $('#quitA').onclick=()=>go(home);
+  say((A.asked.length%3===2?chat+' ':'')+q[1]);
+}
+function guessA(pool){
+  const g=pick(pool);
+  const tok=++navToken;
+  screen.innerHTML=`<div class="duo">
+    <div class="card stack">${host('think','Hmm… let me think…')}${counter(Math.min(A.asked.length,MAXQ))}</div>
+    <div class="card qcard"><div class="thinker" aria-hidden="true">🥁</div><h2>Drumroll, please…</h2></div></div>`;
+  sfx('drum'); say('Drumroll please!');
+  setTimeout(()=>{ if(tok===navToken) showGuessA(g.name,true); }, reduced()?400:1500);
+}
+function showGuessA(name,fresh){
+  const g=ANIMALS.find(a=>a.name===name);
+  if(fresh) A.guesses++;
+  screen.innerHTML=`<div class="duo">
+    <div class="card stack">${host('wow',`Is it ${an(g.name)} ${esc(g.name)}?`)}${counter(Math.min(A.asked.length,MAXQ))}</div>
+    <div class="card qcard">
+      <div class="qnum">My guess${A.guesses>1?' #'+A.guesses:''}</div>
+      <div class="medal pop" aria-hidden="true">${esc(g.emoji)}</div>
+      <div class="qtext">Is it ${an(g.name)} ${esc(g.name)}?</div>
+      <div class="answers"><button class="btn" id="gY" type="button">🎉 Yes!</button><button class="btn plum" id="gN" type="button">Nope</button></div>
+      <div class="row" style="margin-top:18px"><button class="btn ghost small" id="undo" type="button" ${A.hist.length?'':'disabled'}>↩️ Undo</button></div>
+    </div></div>`;
+  $('#gY').onclick=()=>{
+    // Remember answers to the kids' own questions for this animal.
+    const custom={}; store.customQ.forEach(q=>{ if(A.answers[q.code]!==undefined) custom[q.code]=A.answers[q.code]; });
+    if(Object.keys(custom).length){ upsertLearned(g.name,{attrs:custom}); }
+    save(); rebuild(); unlock(g.name);
+    sfx('win'); confetti();
+    reveal({title:'I got it! Hoo hoo!',mood:'happy',animal:g,
+      lines:`<p class="muted">I needed ${A.asked.length} question${A.asked.length===1?'':'s'} and ${A.guesses} guess${A.guesses===1?'':'es'}.</p>`,
+      buttons:`<button class="btn sun" id="again" type="button">Play again</button><button class="btn ghost" id="hm" type="button">Home</button>`});
+    $('#again').onclick=()=>go(startA); $('#hm').onclick=()=>go(home);
+    say(`Yay! I guessed it! It's ${an(g.name)} ${g.name}.`+(g.fact?` Fun fact: ${g.fact}`:''));
+  };
+  $('#gN').onclick=()=>{ sfx('no'); snapA({type:'guess',name:g.name}); A.rejected.add(g.name); stepA(); };
+  $('#undo').onclick=undoA;
+  if(fresh) say(`Is it ${an(g.name)} ${g.name}?`);
+}
+function commitStump(){ store.stats.stumps++; save(); award('stump1'); if(store.stats.stumps>=5) award('stump5'); }
+function learnA(){
+  sfx('lose');
+  let chosen='🐾', qAns=true;
+  screen.innerHTML=`<div class="card stack">
+    ${host('sad','You stumped me!','Teach me your animal so I can guess it next time.')}
+    <div><label for="lname">What animal were you thinking of?</label><input type="text" id="lname" autocomplete="off" maxlength="40" placeholder="Type the animal's name"></div>
+    <div><div class="glabel" id="emoLbl" style="font-size:16px;letter-spacing:0;text-transform:none;color:var(--ink);margin-bottom:6px">Pick a picture for it</div><div class="emojis" id="emoGrid" role="group" aria-labelledby="emoLbl">${EMOJI_CHOICES.map(e=>`<button type="button" class="emo" data-e="${e}" aria-pressed="${e===chosen}">${e}</button>`).join('')}</div></div>
+    <div><label for="lfact">A fun fact about it (you can skip this)</label><input type="text" id="lfact" autocomplete="off" maxlength="160" placeholder="Example: It sleeps upside down"></div>
+    <div class="card" style="background:var(--sun-soft);box-shadow:none">
+      <label for="lq">Teach me a new question (you can skip this)</label>
+      <p class="muted" style="margin-bottom:8px;font-size:15px">A yes or no question that would help me find your animal.</p>
+      <input type="text" id="lq" autocomplete="off" maxlength="80" placeholder="Example: Does it have a pouch?">
+      <p style="font-weight:800;margin:12px 0 6px">For your animal, the answer is:</p>
+      <div class="yn" id="lqa"><button type="button" data-v="1" aria-pressed="true">👍 Yes</button><button type="button" data-v="0" aria-pressed="false">👎 No</button></div>
+    </div>
+    <p id="lmsg" class="muted" hidden></p>
+    <div class="row"><button class="btn sun" id="lsave" type="button">Teach me!</button><button class="btn ghost" id="lskip" type="button">Skip</button></div>
+    ${A.hist.length?'<div class="row"><button class="btn ghost small" id="lundo" type="button">↩️ Undo my last answer</button></div>':''}
+  </div>`;
+  const lu=$('#lundo'); if(lu) lu.onclick=undoA;
+  $('#emoGrid').onclick=e=>{const b=e.target.closest('.emo'); if(!b) return; chosen=b.dataset.e; sfx('tap'); document.querySelectorAll('.emo').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));};
+  $('#lqa').onclick=e=>{const b=e.target.closest('button'); if(!b) return; qAns=b.dataset.v==='1'; document.querySelectorAll('#lqa button').forEach(x=>x.setAttribute('aria-pressed',x===b?'true':'false'));};
+  $('#lskip').onclick=()=>{ commitStump(); go(home); };
+  $('#lsave').onclick=()=>{
+    const name=$('#lname').value.trim().toLowerCase().replace(/^(an?|the)\s+/,'').slice(0,40);
+    if(!name){ const m=$('#lmsg'); m.hidden=false; m.textContent='Type the animal\'s name first.'; $('#lname').focus(); return; }
+    const existing=ANIMALS.find(a=>a.name===name);
+    const attrs={}; Object.entries(A.answers).forEach(([c,v])=>attrs[c]=v);
+    let qtext=$('#lq').value.trim().replace(/\s+/g,' ');
+    let newQ=false;
+    if(qtext){
+      qtext=cap(qtext); if(!/\?$/.test(qtext)) qtext+='?';
+      const dupe=allQ().find(q=>q[1].toLowerCase()===qtext.toLowerCase());
+      const code=dupe?dupe[0]:'c'+Date.now().toString(36);
+      if(!dupe){ store.customQ.push({code,text:qtext}); newQ=true; }
+      attrs[code]=qAns;
+    }
+    commitStump();
+    if(existing&&BUILTIN_NAMES.has(name)) Object.keys(attrs).forEach(k=>{ if(BASECODES.includes(k)) delete attrs[k]; });
+    upsertLearned(name,{attrs,emoji:(existing&&chosen==='🐾')?existing.emoji:chosen,fact:$('#lfact').value.trim()});
+    save(); rebuild(); unlock(name);
+    if(newQ) award('teacher');
+    const a=ANIMALS.find(x=>x.name===name);
+    sfx('win');
+    reveal({title:'Thanks! I learned something.',mood:'happy',animal:a,
+      lines:`<p class="muted">${existing?`I already knew the ${esc(name)}, but now I know it even better.`:`${esc(cap(name))} is new to me. I'll remember it on this device.`}${newQ?' I also learned your new question!':''}</p>`,
+      buttons:`<button class="btn sun" id="again" type="button">Play again</button><button class="btn ghost" id="hm" type="button">Home</button>`});
+    $('#again').onclick=()=>go(startA); $('#hm').onclick=()=>go(home);
+    say(`Thanks! Now I know about ${an(name)} ${name}.`);
+  };
+  say('You stumped me! What animal were you thinking of?');
+}
+
+// ================= Typed or spoken questions =================
+const RULES=[
+ ['bw',/black (and|&) white/],
+ ['me',/\b(eats?|eating) (meat|other animals|animals|fish|bugs|insects|mice|birds)\b|\b(hunt|hunts|hunting|meat|carnivore|prey)\b/],
+ ['cl',/\bclimb/],
+ ['ln',/\bneck/],
+ ['nl',/\b(no legs|legless|without legs|slither)/],
+ ['l4',/\b(four|4) legs/],
+ ['LEGN',/\b(two|2|six|6|eight|8) legs\b/],
+ ['LEGS',/\blegs?\b/],
+ ['ALIVE',/\b(still alive|alive today|alive now)\b/],
+ ['ex',/\b(extinct|dinosaur)/],
+ ['oc',/\b(ocean|sea|salt water)\b/],
+ ['wa',/\b(live|lives|living) (in|near|by) (the )?(water|lake|river|pond)|\bin (the )?water\b/],
+ ['fl',/\b(fly|flies|flying|wings?)\b/],
+ ['fu',/\b(fur|furry|fuzzy|fluffy|hair|hairy)\b/],
+ ['fe',/\bfeathers?\b/],
+ ['sc',/\bscal(e|es|y)\b/],
+ ['sh',/\bshell/],
+ ['ho',/\b(horn|horns|antler|antlers)\b/],
+ ['st',/\bstrip/],
+ ['sp',/\bspot/],
+ ['bi',/\bbirds?\b/],
+ ['ma',/\bmammal/],
+ ['re',/\breptile/],
+ ['am',/\bamphibian/],
+ ['in',/\b(insect|insects|bug|bugs)\b/],
+ ['fi',/\bfish\b/],
+ ['pe',/\bpets?\b/],
+ ['fa',/\b(farm|barn)\b/],
+ ['af',/\b(africa|african|savanna)\b/],
+ ['co',/\b(cold|snow|snowy|ice|icy|arctic|antarctica)\b/],
+ ['jg',/\b(forest|jungle|woods|rainforest|trees?)\b/],
+ ['ni',/\b(night|nighttime|nocturnal)\b/],
+ ['ju',/\b(jump|jumps|hop|hops|hopping|jumping)\b/],
+ ['bg',/\b(is it|it's|it is|is) (really |very )?(big|bigger|large|huge|giant|tall|heavy)\b(?! (ears|eyes|teeth|tail|feet|nose|than))|\bbigger than (a |an )?(person|grown|adult|human|me|you|people)/],
+ ['sm',/\b(is it|it's|it is|is) (really |very )?(small|smaller|little|tiny)\b(?! (ears|eyes|teeth|tail|feet|nose|than))|\bsmaller than (a )?cat/]
+];
+function understand(text){
+  const t=' '+text.toLowerCase().replace(/[^a-z0-9.\s'&-]/g,' ').replace(/\s+/g,' ')+' ';
+  // A guess, like "is it a lion" or just "lion"?
+  const board=B?B.board:ANIMALS;
+  const byLen=[...board].sort((a,b)=>b.name.length-a.name.length);
+  const g=t.trim().replace(/[?!.]+$/,'').match(/^(?:is it|it's|it is|its|is that|i think it's|i think it is|i think its|i guess|my guess is|i guess it's|guess)?\s*(?:an?|the)?\s*(.+)$/);
+  const cand=g?g[1].trim():'';
+  if(cand&&!/\b(than|like|as|or|and|size)\b/.test(cand)){
+    for(const a of byLen){ const n=a.name.toLowerCase(); if(cand===n||cand===n+'s'||cand===n+'es') return {guess:a.name}; }
+  }
+  // One of the kids' own questions?
+  const words=s=>s.toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/).filter(w=>w.length>3&&!['does','have','that','live','with','your','they','what','this'].includes(w));
+  const tw=new Set(words(t));
+  let bestC=null,bestScore=0;
+  store.customQ.forEach(q=>{ const qw=words(q.text); const hit=qw.filter(w=>tw.has(w)).length; if(hit>bestScore&&hit>=Math.min(2,qw.length)){bestScore=hit;bestC=q.code;} });
+  if(bestC) return {code:bestC};
+  for(const [c,re] of RULES) if(re.test(t)) return {code:c};
+  return null;
+}
+let rec=null, listening=false;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function stopListening(){ if(rec&&listening){ try{rec.abort();}catch(e){} } listening=false; }
+
+// ================= Mode B: you guess =================
+let B=null;
+function startDaily(){
+  const k=dayKey(); const done=store.stats.dailyDone[k]; const s=dailyAnimal();
+  if(done){
+    screen.innerHTML=`<div class="card center stack">
+      ${host(done.won?'happy':'smug',done.won?`You solved today's mystery in ${done.tries} tries!`:'Today\'s mystery is done.','A new mystery animal shows up tomorrow.')}
+      ${done.won?`<div class="medal" aria-hidden="true">${s.emoji}</div><h2>${esc(cap(s.name))}</h2>`:''}
+      <p class="muted">Daily streak: <b>${store.stats.lastDaily===k?store.stats.dailyStreak:0}</b> day${(store.stats.lastDaily===k?store.stats.dailyStreak:0)===1?'':'s'} in a row</p>
+      <div class="row"><button class="btn sun" id="hm" type="button">Home</button></div></div>`;
+    $('#hm').onclick=()=>go(home); return;
+  }
+  startB({daily:true,secret:s});
+}
+function startB(opts){
+  const board=opts.daily?BUILTIN.filter(a=>a.tier!=='h').map(a=>ANIMALS.find(x=>x.name===a.name)):levelAnimals();
+  const secret=opts.secret||pick(board);
+  if(!board.includes(secret)) board.push(secret);
+  B={secret,board:[...board].sort((a,b)=>a.name.localeCompare(b.name)),asked:{},used:0,wrong:new Set(),last:null,mood:'idle',
+     helper:opts.daily?true:store.level!=='hard',opts,wasted:0,final:false,level:store.level,hints:0};
+  renderB();
+  const tp=opts.tp, race=opts.race;
+  const who=tp?tp.names[tp.turn]:race?race.names[race.turn]:opts.stump?opts.stump.guesser:null;
+  say((who?who+', ':'')+(opts.daily?"Here's today's mystery animal. ":"I'm thinking of an animal. ")+'Ask me questions to find out what it is!');
+}
+function consistent(a){ for(const [c,v] of Object.entries(B.asked)){ if(v===undefined) continue; const av=a.attrs[c]; if(av!==undefined&&av!==v) return false; } return true; }
+function matching(){ return B.board.filter(a=>!B.wrong.has(a.name)&&consistent(a)).length; }
+function whoseTurn(){ const o=B.opts; if(o.race) return o.race.names[o.race.turn]; if(o.tp) return o.tp.names[o.tp.turn]; if(o.stump) return o.stump.guesser; return null; }
+function renderB(keepScroll){
+  const y=window.scrollY;
+  const qs=allQ();
+  const groupsHtml=GROUPS.map(g=>{ const list=qs.filter(q=>q[2]===g); if(!list.length) return '';
+    return `<div><div class="glabel">${g}</div><div class="chips">${list.map(q=>{
+      const has=q[0] in B.asked; const v=B.asked[q[0]];
+      const cls=!has?(B.final?'locked':''):v===true?'yes':v===false?'no':'idk';
+      const tag=!has?'':v===true?'Yes':v===false?'No':'Not sure';
+      return `<button type="button" class="chip ${cls}" data-q="${esc(q[0])}" ${has||B.final?'disabled':''}>${esc(q[1])}${has?`<span class="tag">· ${tag}</span>`:''}</button>`;
+    }).join('')}</div></div>`; }).join('');
+  const left=matching();
+  const boardHtml=B.board.map(a=>{ const w=B.wrong.has(a.name); const out=!w&&B.helper&&!consistent(a);
+    return `<button type="button" class="tile${w?' wrong':''}${out?' out':''}" data-n="${esc(a.name)}" ${w?'disabled':''} aria-label="Guess ${esc(a.name)}${w?', already guessed':out?', does not match':''}"><span class="e" aria-hidden="true">${esc(a.emoji)}</span>${esc(a.name)}</button>`; }).join('');
+  const o=B.opts; const who=whoseTurn();
+  const title=o.daily?'Daily mystery':o.race?'Race!':o.stump?`${esc(o.stump.picker)} picked a secret animal`:null;
+  const canHint=!B.final&&B.used+2<MAXQ&&hintCode()!==null;
+  screen.innerHTML=`<div class="stack">
+    ${who&&(o.race||o.tp)?`<div class="turnbar">${esc(who)}'s turn</div>`:''}
+    <div class="play">
+      <div class="stack">
+        <div class="card stack">${title?`<div class="glabel">${title}</div>`:''}
+          ${host(B.mood,B.last?B.last.big:"I'm thinking of an animal…",B.last?B.last.small:'Ask me a question, or tap an animal to guess.')}
+          ${counter(Math.min(B.used,MAXQ),'Tries')}
+        </div>
+        <div class="card stack">
+          <div>
+            <label for="askIn">Ask your own question</label>
+            <form class="askbox" id="askForm">
+              <input type="text" id="askIn" autocomplete="off" maxlength="100" placeholder="${B.final?'Make your final guess':'Does it have stripes?'}">
+              ${SR?`<button type="button" class="mic" id="micBtn" aria-label="Say your question">🎤</button>`:''}
+              <button class="btn small" type="submit">Ask</button>
+            </form>
+            <p class="muted" style="font-size:14px;margin-top:6px">${SR?'Type it, or tap 🎤 and say it.':'Type it. You can also tap the microphone on the keyboard to say it.'} You can guess this way too: "Is it a lion?"</p>
+          </div>
+          <div class="sectionhead" style="margin:0"><h3>Or tap a question</h3>
+            <button class="btn ghost small" id="hint" type="button" ${canHint?'':'disabled'}>💡 Hint (uses 2 tries)</button></div>
+          <div class="groups" id="qs">${groupsHtml}</div>
+        </div>
+      </div>
+      <div class="card pinned"><div class="sectionhead"><h3>Tap to guess</h3>
+          ${B.level==='hard'&&!o.daily?'':`<label class="toggle" for="helper"><input type="checkbox" id="helper" ${B.helper?'checked':''}>Fade ones that don't match</label>`}</div>
+        ${B.helper?`<p class="muted" style="margin:0 0 10px;font-size:15px">${left} animal${left===1?'':'s'} still match.</p>`:''}
+        <div class="board" id="board">${boardHtml}</div></div>
+    </div>
+    <div class="row"><button class="btn ghost small" id="giveup" type="button">I give up</button></div>
+  </div>`;
+  $('#qs').onclick=e=>{const b=e.target.closest('.chip'); if(!b||b.disabled) return; askB(b.dataset.q);};
+  $('#board').onclick=e=>{const b=e.target.closest('.tile'); if(!b||b.disabled) return; guessB(b.dataset.n);};
+  const h=$('#helper'); if(h) h.onchange=e=>{B.helper=e.target.checked; renderB(true);};
+  $('#giveup').onclick=()=>endB(false,true);
+  $('#hint').onclick=hintB;
+  $('#askForm').onsubmit=e=>{ e.preventDefault(); handleTyped($('#askIn').value); };
+  const mic=$('#micBtn'); if(mic) mic.onclick=listen;
+  if(keepScroll) window.scrollTo(0,y);
+}
+function handleTyped(text){
+  text=(text||'').trim(); if(!text) return;
+  const r=understand(text);
+  if(!r){ B.mood='think'; B.last={big:"Hmm, I don't know how to answer that one.",small:`You asked: "${esc(text)}". Try asking about its body, where it lives, or what it does.`}; sfx('idk'); say("Hmm, I don't know how to answer that one. Try another question."); renderB(true); return; }
+  if(r.guess) return guessB(r.guess);
+  if(B.final){ B.last={big:'Time for your final guess!',small:'Tap an animal, or type "Is it a…?"'}; renderB(true); return; }
+  if(r.code==='LEGS'&&('nl' in B.asked)) r.code='nl';
+  if(r.code==='ALIVE'&&('ex' in B.asked)){ const v=B.asked.ex; B.mood='smug'; B.last={big:v===false?"You already know that! Yes, it's alive today.":v===true?"You already know that! No, it's extinct.":"You already asked, and I wasn't sure.",small:'That one is free.'}; say(B.last.big); renderB(true); return; }
+  if(r.code==='LEGS'){ const x=B.secret.attrs.nl; return answerB('LEGS','Does it have legs?',x===undefined?undefined:!x,text); }
+  if(r.code==='ALIVE'){ const x=B.secret.attrs.ex; return answerB('ALIVE','Is it still alive today?',x===undefined?undefined:!x,text); }
+  if(r.code==='LEGN'){
+    const n=/\b(two|2)\b/.test(text.toLowerCase())?2:/\b(six|6)\b/.test(text.toLowerCase())?6:8; const a=B.secret.attrs;
+    let v;
+    if(n===2) v=(a.bi||a.ex&&!a.l4&&a.re&&B.secret.name==='t. rex'||B.secret.name==='kangaroo')?true:(a.l4||a.nl||a.in)?false:undefined;
+    else if(n===6) v=a.in===true?true:(a.l4||a.bi||a.nl)?false:undefined;
+    else v=['spider','scorpion'].includes(B.secret.name)?true:(a.l4||a.bi||a.nl||a.in)?false:undefined;
+    return answerB('LEGN',`Does it have ${n} legs?`,v,text);
+  }
+  if(r.code in B.asked){ const v=B.asked[r.code]; B.mood='smug'; B.last={big:`You already asked that! The answer was ${v===true?'yes':v===false?'no':'"not sure"'}.`,small:esc(QMAP()[r.code][1])}; say(B.last.big); renderB(true); return; }
+  askB(r.code,text);
+}
+function listen(){
+  if(!SR) return;
+  if(listening){ stopListening(); renderB(true); return; }
+  try{
+    rec=new SR(); rec.lang='en-US'; rec.interimResults=false; rec.maxAlternatives=1;
+    rec.onresult=e=>{ const t=e.results[0][0].transcript; listening=false; const i=$('#askIn'); if(i) i.value=t; handleTyped(t); };
+    rec.onerror=e=>{ listening=false; const m=$('#micBtn'); if(m) m.classList.remove('on');
+      B.mood='sad'; B.last={big:e.error==='not-allowed'||e.error==='service-not-allowed'?'I can\'t hear you on this device.':'I didn\'t catch that.',small:e.error==='not-allowed'||e.error==='service-not-allowed'?'Type your question instead. A grown-up can allow the microphone in Settings.':'Tap 🎤 and try again, or type it.'}; renderB(true); };
+    rec.onend=()=>{ listening=false; const m=$('#micBtn'); if(m) m.classList.remove('on'); };
+    rec.start(); listening=true; const m=$('#micBtn'); if(m) m.classList.add('on');
+    B.mood='wow'; B.last={big:'I\'m listening…',small:'Say your question out loud.'};
+    const sp=document.querySelector('.speech'); if(sp) sp.innerHTML=`${B.last.big}<small>${B.last.small}</small>`;
+  }catch(e){ listening=false; }
+}
+function nextTurn(){ const o=B.opts; if(o.race){ o.race.turn=1-o.race.turn; } }
+function askB(c,typed){ answerB(c,QMAP()[c][1],B.secret.attrs[c],typed); }
+function answerB(c,qtext,v,typed){
+  const before=matching();
+  B.asked[c]=v; B.used++;
+  // keep the derived "legs" answer consistent with the board
+  if(c==='LEGS'){ delete B.asked.LEGS; if(v!==undefined) B.asked.nl=!v; }
+  if(c==='ALIVE'){ delete B.asked.ALIVE; if(v!==undefined) B.asked.ex=!v; }
+  if(c==='LEGN'){ delete B.asked.LEGN; }
+  const after=matching(); if(after===before) B.wasted++;
+  const reply=v===true?'Yes!':v===false?'No!':"Hmm, I'm not sure about that one.";
+  B.mood=v===true?'happy':v===false?'smug':'think';
+  sfx(v===true?'yes':v===false?'no':'idk');
+  const small=typed&&typed.toLowerCase()!==qtext.toLowerCase()?`You asked: "${esc(typed)}"`:esc(qtext);
+  nextTurn();
+  const who=B.opts.race?` Now it's ${B.opts.race.names[B.opts.race.turn]}'s turn.`:'';
+  B.last={big:reply,small:small+esc(who)};
+  if(B.used>=MAXQ){ B.final=true; B.last={big:reply,small:small+' That was your last question. Make one final guess!'}; say(reply+' That was your last question. Make one final guess!'); }
+  else say(reply+who);
+  renderB(true);
+}
+function hintCode(){
+  const unasked=BASECODES.filter(c=>!(c in B.asked)&&!(c==='nl'&&('LEGS' in B.asked)));
+  const yes=unasked.filter(c=>B.secret.attrs[c]===true);
+  if(yes.length) return pick(yes);
+  const def=unasked.filter(c=>B.secret.attrs[c]!==undefined);
+  return def.length?pick(def):null;
+}
+function hintB(){
+  const c=hintCode(); if(c===null||B.used+2>=MAXQ) return;
+  const v=B.secret.attrs[c]; B.asked[c]=v; B.used+=2; B.hints++;
+  B.mood='wow'; sfx('badge');
+  const q=QMAP()[c][1];
+  nextTurn();
+  B.last={big:`Here's a hint: the answer to "${esc(q)}" is ${v?'yes':'no'}!`,small:B.opts.race?`Now it's ${esc(B.opts.race.names[B.opts.race.turn])}'s turn.`:'That used 2 tries.'};
+  say(`Here's a hint. ${q} ${v?'Yes!':'No!'}`);
+  renderB(true);
+}
+function guessB(name){
+  const wasFinal=B.final;
+  if(!wasFinal) B.used++;
+  if(name===B.secret.name) return endB(true);
+  if(wasFinal) return endB(false);
+  B.wrong.add(name); B.mood='smug'; sfx('no');
+  nextTurn();
+  const who=B.opts.race?` Now it's ${B.opts.race.names[B.opts.race.turn]}'s turn.`:'';
+  B.last={big:`Nope, it's not ${an(name)} ${esc(name)}.`,small:'Keep trying!'+esc(who)};
+  if(B.used>=MAXQ){ B.final=true; B.last={big:`Nope, it's not ${an(name)} ${esc(name)}.`,small:'That was your last try. Make one final guess!'}; say(`Nope, it's not ${an(name)} ${name}. Make one final guess!`); }
+  else say(`Nope, it's not ${an(name)} ${name}.`+who);
+  renderB(true);
+}
+function endB(won,gaveUp){
+  stopListening();
+  const s=B.secret, o=B.opts, tp=o.tp, race=o.race;
+  const winner=race?race.names[race.turn]:null;
+  let pts=0;
+  if(tp){ pts=won?Math.max(1,MAXQ+1-B.used):0; tp.scores[tp.turn]+=pts; tp.rounds[tp.turn]++; }
+  if(won){
+    unlock(s.name);
+    award('firstfind');
+    if(B.used<=8) award('sleuth8'); if(B.used<=5) award('sleuth5');
+    if(B.wasted===0&&Object.keys(B.asked).length>=2) award('nowaste');
+    if(B.level==='hard'&&!o.daily) award('hard');
+    if(race) award('race');
+    sfx('win'); confetti();
+  } else sfx('lose');
+  if(o.daily){
+    const k=dayKey();
+    store.stats.dailyDone[k]={won,tries:B.used};
+    if(won){ store.stats.dailyStreak=store.stats.lastDaily===yesterdayKey()?store.stats.dailyStreak+1:1; store.stats.lastDaily=k; award('daily1'); if(store.stats.dailyStreak>=3) award('streak3'); }
+    const keys=Object.keys(store.stats.dailyDone).sort(); while(keys.length>40) delete store.stats.dailyDone[keys.shift()];
+    save();
+  }
+  let title,lines;
+  if(race){ title=won?`${winner} wins the race!`:'Nobody found it this time!'; lines=`<p class="muted">${won?`Found in ${B.used} tries total.`:`It was ${an(s.name)} ${esc(s.name)}.`}</p>`; }
+  else if(o.stump){ title=won?`${o.stump.guesser} found it!`:`${o.stump.picker} stumped ${o.stump.guesser}!`; lines=`<p class="muted">${won?`${esc(o.stump.guesser)} used ${B.used} of ${MAXQ} tries.`:`The secret animal was ${an(s.name)} ${esc(s.name)}.`}</p>`; }
+  else { title=won?'You found it!':gaveUp?'Here was my animal':'Out of tries!';
+    lines=won?`<p class="muted">You used ${B.used} of ${MAXQ} tries.${tp?` That's <b>${pts}</b> point${pts===1?'':'s'} for ${esc(tp.names[tp.turn])}.`:''}${o.daily?` Daily streak: <b>${store.stats.dailyStreak}</b>.`:''}</p>`
+            :`<p class="muted">I was thinking of ${an(s.name)} ${esc(s.name)}.${tp?' No points this turn.':''}</p>`; }
+  let buttons;
+  if(tp) buttons=`<button class="btn sun" id="next" type="button">Next turn: ${esc(tp.names[1-tp.turn])}</button>${tp.rounds[0]===tp.rounds[1]?'<button class="btn ghost" id="end" type="button">See who won</button>':''}`;
+  else if(race) buttons=`<button class="btn sun" id="again" type="button">Race again</button><button class="btn ghost" id="hm" type="button">Home</button>`;
+  else if(o.stump) buttons=`<button class="btn sun" id="again" type="button">Switch: ${esc(o.stump.guesser)} picks</button><button class="btn ghost" id="hm" type="button">Home</button>`;
+  else if(o.daily) buttons=`<button class="btn sun" id="hm" type="button">Home</button>`;
+  else buttons=`<button class="btn sun" id="again" type="button">Play again</button><button class="btn ghost" id="hm" type="button">Home</button>`;
+  reveal({title,mood:won?'happy':'smug',animal:s,lines:(tp?scoreBoard(tp,-1):'')+lines,buttons});
+  const q=id=>document.getElementById(id);
+  if(tp){ q('next').onclick=()=>{tp.turn=1-tp.turn; go(()=>passScreen(tp));}; if(q('end')) q('end').onclick=()=>go(()=>final2P(tp)); }
+  else if(race){ q('again').onclick=()=>go(()=>startRace(race.names)); q('hm').onclick=()=>go(home); }
+  else if(o.stump){ q('again').onclick=()=>go(()=>stumpPick({picker:o.stump.guesser,guesser:o.stump.picker})); q('hm').onclick=()=>go(home); }
+  else { if(q('again')) q('again').onclick=()=>go(()=>startB({})); q('hm').onclick=()=>go(home); }
+  say(`${won?(race?winner+' wins! ':'You got it! '):''}It was ${an(s.name)} ${s.name}.`+(s.fact?` Fun fact: ${s.fact}`:''));
+}
+
+// ================= Two players =================
+function names(){ return [ (store.p1||'').trim()||'Player 1', (store.p2||'').trim()||'Player 2' ]; }
+function twoMenu(){
+  screen.innerHTML=`<div class="card stack">
+    ${host('happy',"Who's playing?",'Type your names, then pick a game.')}
+    <div class="row" style="gap:12px">
+      <div style="flex:1 1 200px"><label for="p1">Player 1</label><input type="text" id="p1" maxlength="20" autocomplete="off" value="${esc(store.p1||'')}" placeholder="Name"></div>
+      <div style="flex:1 1 200px"><label for="p2">Player 2</label><input type="text" id="p2" maxlength="20" autocomplete="off" value="${esc(store.p2||'')}" placeholder="Name"></div>
+    </div>
+    <div class="modes">
+      <button class="mode a" id="tTurns" type="button"><span class="big" aria-hidden="true">🔁</span><span><h3>Take turns</h3><span class="d">Each finds their own secret animal. Fewer tries scores more points.</span></span></button>
+      <button class="mode b" id="tRace" type="button"><span class="big" aria-hidden="true">🏁</span><span><h3>Race</h3><span class="d">Same secret animal. Take turns asking. First to guess it wins.</span></span></button>
+      <button class="mode c" id="tStump" type="button"><span class="big" aria-hidden="true">🙈</span><span><h3>Stump your sibling</h3><span class="d">One picks a secret animal. The other asks. Hoot answers.</span></span></button>
+    </div>
+  </div>`;
+  const keep=()=>{ store.p1=$('#p1').value.trim().slice(0,20); store.p2=$('#p2').value.trim().slice(0,20); save(); return names(); };
+  $('#tTurns').onclick=()=>{ const n=keep(); go(()=>passScreen({names:n,scores:[0,0],rounds:[0,0],turn:0})); };
+  $('#tRace').onclick=()=>{ const n=keep(); go(()=>startRace(n)); };
+  $('#tStump').onclick=()=>{ const n=keep(); go(()=>stumpPick({picker:n[0],guesser:n[1]})); };
+}
+function startRace(n){ startB({race:{names:n,turn:Math.random()<.5?0:1}}); }
+function scoreBoard(tp,hl){
+  const t=hl===undefined?tp.turn:hl;
+  return `<div class="scores">${[0,1].map(i=>`<div class="score${i===t?' turn':''}"><div style="font-weight:800">${esc(tp.names[i])}</div><div class="n">${tp.scores[i]}</div><div class="muted" style="font-size:14px">${tp.rounds[i]} turn${tp.rounds[i]===1?'':'s'}</div></div>`).join('')}</div>`;
+}
+function passScreen(tp){
+  screen.innerHTML=`<div class="card qcard stack">
+    ${scoreBoard(tp)}
+    ${host('wow',`Pass the iPad to ${esc(tp.names[tp.turn])}!`,`No peeking, ${esc(tp.names[1-tp.turn])}!`)}
+    <div class="row"><button class="btn sun" id="rdy" type="button">I'm ${esc(tp.names[tp.turn])} and I'm ready</button></div>
+    ${tp.rounds[0]===tp.rounds[1]&&tp.rounds[0]>0?'<div class="row"><button class="btn ghost small" id="end" type="button">End game</button></div>':''}
+  </div>`;
+  $('#rdy').onclick=()=>go(()=>startB({tp})); const e=$('#end'); if(e) e.onclick=()=>go(()=>final2P(tp));
+  say(`Pass the iPad to ${tp.names[tp.turn]}.`);
+}
+function final2P(tp){
+  const [a,b]=tp.scores; const msg=a===b?"It's a tie!":`${tp.names[a>b?0:1]} wins!`;
+  sfx('win'); confetti();
+  screen.innerHTML=`<div class="card qcard stack">
+    ${host('happy',esc(msg))}
+    <div class="medal pop" aria-hidden="true">🏆</div>
+    ${scoreBoard(tp,a===b?-1:(a>b?0:1))}
+    <div class="row"><button class="btn sun" id="again" type="button">New game</button><button class="btn ghost" id="hm" type="button">Home</button></div>
+  </div>`;
+  $('#again').onclick=()=>go(twoMenu); $('#hm').onclick=()=>go(home);
+  say(msg);
+}
+function stumpPick(roles){
+  const list=[...levelAnimals()].sort((a,b)=>a.name.localeCompare(b.name));
+  screen.innerHTML=`<div class="card stack">
+    ${host('smug',`${esc(roles.picker)}, pick a secret animal!`,`Don't let ${esc(roles.guesser)} see.`)}
+    <div class="board" id="pickBoard">${list.map(a=>`<button type="button" class="tile" data-n="${esc(a.name)}"><span class="e" aria-hidden="true">${esc(a.emoji)}</span>${esc(a.name)}</button>`).join('')}</div>
+    <div class="row"><button class="btn ghost small" id="hm" type="button">Cancel</button></div>
+  </div>`;
+  $('#hm').onclick=()=>go(home);
+  $('#pickBoard').onclick=e=>{ const b=e.target.closest('.tile'); if(!b) return; const a=ANIMALS.find(x=>x.name===b.dataset.n); sfx('tap');
+    go(()=>{ screen.innerHTML=`<div class="card qcard stack">
+      ${host('wow',`Shh! You picked ${an(a.name)} ${esc(a.name)}.`,`Now pass the iPad to ${esc(roles.guesser)}.`)}
+      <div class="row"><button class="btn sun" id="rdy" type="button">I'm ${esc(roles.guesser)} and I'm ready</button><button class="btn ghost" id="back" type="button">Pick again</button></div></div>`;
+      $('#rdy').onclick=()=>go(()=>startB({secret:a,stump:roles})); $('#back').onclick=()=>go(()=>stumpPick(roles)); }); };
+  say(`${roles.picker}, pick a secret animal. Don't let ${roles.guesser} see!`);
+}
+
+// ================= Sticker book & badges =================
+function stickerBook(){
+  const list=[...ANIMALS].sort((a,b)=>(a.tier==='h')-(b.tier==='h')||a.name.localeCompare(b.name));
+  const got=list.filter(a=>store.found[a.name]).length;
+  screen.innerHTML=`<div class="card stack">
+    ${host('happy','Your sticker book!','Find an animal, or show me yours, to earn its sticker.')}
+    <div><div class="counter"><span>Stickers: <b>${got}</b> of ${list.length}</span></div><div class="progress" style="margin-top:6px"><span style="width:${list.length?Math.round(got/list.length*100):0}%"></span></div></div>
+    <div id="stickerInfo" hidden></div>
+    <div class="book" id="book">${list.map(a=>{ const g=!!store.found[a.name];
+      return `<button type="button" class="sticker ${g?'got':'locked'}" data-n="${esc(a.name)}" ${g?'':'disabled'} aria-label="${g?esc(a.name):'Locked sticker'}"><span class="e" aria-hidden="true">${esc(a.emoji)}</span>${g?esc(a.name):'?'}</button>`; }).join('')}</div>
+    <div class="row"><button class="btn sun" id="hm" type="button">Back home</button></div>
+  </div>`;
+  $('#hm').onclick=()=>go(home);
+  $('#book').onclick=e=>{ const b=e.target.closest('.sticker.got'); if(!b) return; const a=ANIMALS.find(x=>x.name===b.dataset.n); sfx('tap');
+    const box=$('#stickerInfo'); box.hidden=false;
+    box.innerHTML=`<div class="fact" style="margin:0;max-width:none"><b>${esc(a.emoji+' '+cap(a.name))}</b>${esc(a.fact||'No fun fact yet.')}</div>`;
+    say(cap(a.name)+'. '+(a.fact||'')); };
+}
+function badgePage(){
+  const n=BADGES.filter(b=>store.badges[b[0]]).length;
+  screen.innerHTML=`<div class="card stack">
+    ${host(n?'happy':'idle',`You have ${n} of ${BADGES.length} badges!`,'Keep playing to earn more.')}
+    <div class="badges">${BADGES.map(b=>{ const g=store.badges[b[0]];
+      return `<div class="badge ${g?'got':'no'}"><div class="e" aria-hidden="true">${b[1]}</div><b>${esc(b[2])}</b><small>${esc(b[3])}</small></div>`; }).join('')}</div>
+    <div class="row"><button class="btn sun" id="hm" type="button">Back home</button></div>
+  </div>`;
+  $('#hm').onclick=()=>go(home);
+}
+
+// ================= Learned list =================
+function learnedList(){
+  const rows=store.learned.map((l,i)=>{ const a=ANIMALS.find(x=>x.name===l.name);
+    return `<div class="lrow"><span class="e" aria-hidden="true">${esc(a?a.emoji:'🐾')}</span><span class="nm">${esc(cap(l.name))}${BUILTIN_NAMES.has(l.name)?' <span class="muted" style="font-weight:700">(updated)</span>':''}</span><button type="button" class="btn ghost small" data-i="${i}" data-k="a">Forget</button></div>`; }).join('');
+  const qrows=store.customQ.map((q,i)=>`<div class="lrow"><span class="e" aria-hidden="true">❓</span><span class="nm">${esc(q.text)}</span><button type="button" class="btn ghost small" data-i="${i}" data-k="q">Forget</button></div>`).join('');
+  screen.innerHTML=`<div class="card stack">
+    ${host('happy','Things you taught me','They\'re saved on this device.')}
+    <h3>Animals</h3>
+    ${rows?`<div class="learned" id="ll">${rows}</div>`:'<p class="muted">Nothing yet. Stump me in "You think, I guess" and teach me one.</p>'}
+    <h3>Questions</h3>
+    ${qrows?`<div class="learned" id="lq">${qrows}</div>`:'<p class="muted">No new questions yet. You can teach me one when you stump me.</p>'}
+    <div class="row"><button class="btn sun" id="hm" type="button">Back home</button></div>
+  </div>`;
+  $('#hm').onclick=()=>go(home);
+  const handler=e=>{ const b=e.target.closest('button[data-i]'); if(!b) return;
+    if(!b.dataset.sure){ b.dataset.sure='1'; b.textContent='Tap again to forget'; return; }
+    const i=+b.dataset.i;
+    if(b.dataset.k==='a') store.learned.splice(i,1);
+    else { const code=store.customQ[i].code; store.customQ.splice(i,1); store.learned.forEach(l=>delete l.attrs[code]); }
+    save(); rebuild(); learnedList(); };
+  [$('#ll'),$('#lq')].forEach(el=>{ if(el) el.onclick=handler; });
+}
+
+// ================= Grown-ups =================
+function grownGate(){
+  const x=6+Math.floor(Math.random()*4), y=6+Math.floor(Math.random()*4);
+  screen.innerHTML=`<div class="card stack">
+    ${host('idle','Grown-ups only!','Answer to open settings.')}
+    <form id="gate" class="stack"><div><label for="gateIn">What is ${x} × ${y}?</label><input type="number" id="gateIn" inputmode="numeric" autocomplete="off"></div>
+    <p id="gmsg" class="muted" hidden>That's not it. Try again.</p>
+    <div class="row"><button class="btn sun" type="submit">Open</button><button class="btn ghost" id="hm" type="button">Back</button></div></form>
+  </div>`;
+  $('#hm').onclick=()=>go(home);
+  $('#gate').onsubmit=e=>{ e.preventDefault(); if(+$('#gateIn').value===x*y) go(grownUps); else $('#gmsg').hidden=false; };
+}
+function grownUps(){
+  const canFiles=/github\.io$|^localhost$|^127\./.test(location.hostname);
+  screen.innerHTML=`<div class="card stack">
+    <h2>Grown-up settings</h2>
+    <p>Progress saves on this device by itself, in two places. Open the game from its Home Screen icon so it always finds its saves.</p>
+    <p class="muted">Stickers: ${Object.keys(store.found).length} · Badges: ${Object.keys(store.badges).length} · Learned animals: ${store.learned.length} · Learned questions: ${store.customQ.length}</p>
+    ${canFiles?`<div class="row"><button class="btn" id="bk" type="button">Save a backup file</button><label class="btn ghost" for="ld" style="margin:0">Load a backup file</label></div>
+    <input type="file" id="ld" accept="application/json,.json" hidden>`:'<p class="muted">Backup files work in the Home Screen version of the game.</p>'}
+    <p id="pmsg" class="muted" hidden></p>
+    <div class="row"><button class="btn ghost small" id="reset" type="button">Erase all progress</button><button class="btn sun small" id="hm" type="button">Done</button></div>
+  </div>`;
+  const msg=t=>{ const m=$('#pmsg'); m.hidden=false; m.textContent=t; };
+  $('#hm').onclick=()=>go(home);
+  if(canFiles){
+    $('#bk').onclick=()=>{ try{ const blob=new Blob([JSON.stringify(store,null,1)],{type:'application/json'}); const u=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=u; a.download=`animal-game-backup-${dayKey()}.json`; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); msg('Backup file made. On iPad, choose where to save it in Files.'); }catch(e){ msg('Couldn\'t make the backup file on this device.'); } };
+    $('#ld').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader();
+      r.onload=()=>{ let o; try{ o=JSON.parse(r.result); }catch(err){ o=null; }
+        const okFile=o&&o.v===2&&typeof o.writtenAt==='number'&&o.writtenAt>0&&Array.isArray(o.learned)&&o.found&&typeof o.found==='object'&&o.badges&&typeof o.badges==='object';
+        if(!okFile){ msg('That file isn\'t an Animal Game backup. Nothing was changed.'); e.target.value=''; return; }
+        const m=$('#pmsg'); m.hidden=false;
+        m.innerHTML=`This backup from ${esc(new Date(o.writtenAt).toLocaleDateString('en-US'))} has ${Object.keys(o.found).length} stickers, ${Object.keys(o.badges).length} badges and ${o.learned.length} learned animals. Loading it replaces what's on this device. <button class="btn small" id="ldok" type="button" style="margin-top:8px">Replace with this backup</button>`;
+        $('#ldok').onclick=()=>{ store=normalize(o); save(); rebuild(); setToggles(); grownUps(); const mm=$('#pmsg'); mm.hidden=false; mm.textContent='Backup loaded. Welcome back!'; };
+        e.target.value=''; };
+      r.readAsText(f); };
+  }
+  $('#reset').onclick=e=>{ const b=e.currentTarget; if(!b.dataset.sure){ b.dataset.sure='1'; b.textContent='Tap again to erase everything'; return; }
+    const keep={voice:store.voice,sound:store.sound}; store=normalize(keep); save(); rebuild(); grownUps(); const m=$('#pmsg'); m.hidden=false; m.textContent='All progress erased.'; };
+}
+
+// ================= Boot =================
+home();
+idbGet().then(o=>{ if(o&&(o.writtenAt||0)>(store.writtenAt||0)){ store=normalize(o); rebuild(); setToggles(); try{ localStorage.setItem(LSKEY,JSON.stringify(store)); }catch(e){} if(document.querySelector('#mA')) home(); } else if(!o) save(); });
+if('serviceWorker' in navigator && (location.protocol==='https:'&&/github\.io$/.test(location.hostname) || location.hostname==='localhost')){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+})();
+</script>
