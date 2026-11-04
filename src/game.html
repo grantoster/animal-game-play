@@ -865,7 +865,8 @@ function understand(text){
   return null;
 }
 let rec=null, listening=false;
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+// The claude.ai viewer blocks the microphone, so there the keyboard's own dictation mic is used instead.
+const SR=ON_GITHUB?(window.SpeechRecognition||window.webkitSpeechRecognition):null;
 function stopListening(){ if(rec&&listening){ try{rec.abort();}catch(e){} } listening=false; }
 
 // ================= Mode B: you guess =================
