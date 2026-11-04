@@ -6,8 +6,8 @@ SRC=os.path.join(ROOT,'src','game.html'); SITE=ROOT  # Pages serves repo root
 body=open(SRC,encoding='utf-8').read()
 tsv=open(os.path.join(ROOT,'src','animals.tsv'),encoding='utf-8').read().strip()
 assert '`' not in tsv and '${' not in tsv and '\\' not in tsv
-AI_URL=(open(os.path.join(ROOT,'ai_url.txt')).read().strip() if os.path.exists(os.path.join(ROOT,'ai_url.txt')) else '')
-body=body.replace('__ANIMALS__',tsv).replace('__AI_URL__',AI_URL)
+
+body=body.replace('__ANIMALS__',tsv)
 os.makedirs(os.path.join(ROOT,'dist'),exist_ok=True)
 open(os.path.join(ROOT,'dist','artifact.html'),'w',encoding='utf-8').write(body)
 body=body.replace('<meta name="claude:viewport-fit-sides" content="cover">\n','')
