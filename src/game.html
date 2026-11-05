@@ -1016,7 +1016,7 @@ const ALIAS={hippo:'hippopotamus',rhino:'black rhinoceros','t rex':'t. rex',trex
  'whitetail deer':'white-tailed deer','brown bear':'grizzly bear','sea horse':'lined seahorse',seahorse:'lined seahorse','snow monkey':'japanese macaque',caribou:'reindeer',croc:'saltwater crocodile',gator:'american alligator',bunny:'eastern cottontail',mallard:'mallard duck',hog:'domestic pig','duck billed platypus':'platypus','black panther':'leopard','pit bull terrier':'pit bull',husky:'siberian husky'};
 /*/W:RU*/
 function understand(text){
-  const t=' '+text.toLowerCase().replace(/[^a-z0-9.\s'&-]/g,' ').replace(/\s+/g,' ')+' ';
+  const t=' '+text.toLowerCase().replace(/[^a-z0-9.\s'&-]/g,' ').replace(/\b(an? )?pair of /g,'').replace(/\s+/g,' ')+' ';
   // A guess, like "is it a lion" or just "lion"?
   const board=B?B.board:ANIMALS;
   const byLen=[...board].sort((a,b)=>b.name.length-a.name.length);

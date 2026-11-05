@@ -115,15 +115,15 @@ const VEGGIES=['carrot','corn','potato','broccoli','onion','pickle','artichoke',
 const GROUP_TESTS={fruit:a=>FRUITS.includes(a.name),vegetable:a=>VEGGIES.includes(a.name),veggie:a=>VEGGIES.includes(a.name),
  ball:a=>/ball$/.test(a.name)&&a.name!=='bowling ball'||a.name==='bowling ball',vehicle:a=>!!a.attrs.veh,instrument:a=>!!a.attrs.mu,
  food:a=>!!a.attrs.fd,drink:a=>!!a.attrs.dk,toy:a=>!!a.attrs.ty,tool:a=>!!a.attrs.tl,plant:a=>!!a.attrs.pt,furniture:a=>!!a.attrs.fn,
- building:a=>!!a.attrs.bd,boat:a=>['sailboat','canoe','cruise ship','submarine','hovercraft'].includes(a.name),car:a=>a.name==='car',
+ building:a=>!!a.attrs.bd,tree:a=>/tree$/.test(a.name),'kitchen tool':a=>!!a.attrs.kt,'kitchen item':a=>!!a.attrs.kt,cake:a=>/cake$/.test(a.name),boat:a=>['sailboat','canoe','cruise ship','submarine','hovercraft'].includes(a.name),
  candy:a=>['lollipop','chocolate bar','cotton candy','marshmallow'].includes(a.name),dessert:a=>['ice cream cone','cookie','birthday cake','donut','cupcake','cotton candy','fortune cookie'].includes(a.name),
  shoe:a=>['sneakers','rain boots'].includes(a.name)};
 const ALIAS={fries:'french fries',tv:'television',telly:'television',fridge:'refrigerator',phone:'smartphone','cell phone':'smartphone',cellphone:'smartphone','mobile phone':'smartphone',
  sofa:'couch',bike:'bicycle',plane:'airplane',jet:'airplane',frisbee:'flying disc',doughnut:'donut',hotdog:'hot dog',lightbulb:'light bulb',burger:'hamburger',teddy:'teddy bear',
  yoyo:'yo-yo','yo yo':'yo-yo',sneaker:'sneakers',shoes:'sneakers',glasses:'eyeglasses',cap:'baseball cap',hat:'baseball cap',controller:'video game controller',
  'game controller':'video game controller',mouse:'computer mouse',keyboard:'computer keyboard',ipad:'tablet',bus:'school bus',firetruck:'fire truck','fire engine':'fire truck',
- 'ice cream':'ice cream cone',cake:'birthday cake',chocolate:'chocolate bar',cards:'playing cards',puzzle:'jigsaw puzzle',blocks:'toy blocks',skates:'roller skates',
- helmet:'bike helmet',boots:'rain boots','spaceship':'rocket',blimp:'hot air balloon',tree:'oak tree',stone:'rock',shell:'seashell','pine cone':'pinecone'};
+ 'ice cream':'ice cream cone',cards:'playing cards',puzzle:'jigsaw puzzle',blocks:'toy blocks',skates:'roller skates',
+ helmet:'bike helmet',boots:'rain boots','spaceship':'rocket',rock:'rock',shell:'seashell','pine cone':'pinecone'};
 /*/W:RU*/
 '''
 
