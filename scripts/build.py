@@ -3,17 +3,24 @@ import hashlib, json, os, re
 from PIL import Image, ImageDraw
 ROOT=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC=os.path.join(ROOT,'src','game.html'); SITE=ROOT  # Pages serves repo root
-body=open(SRC,encoding='utf-8').read()
-tsv=open(os.path.join(ROOT,'src','animals.tsv'),encoding='utf-8').read().strip()
-assert '`' not in tsv and '${' not in tsv and '\\' not in tsv
-
-body=body.replace('__ANIMALS__',tsv)
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import world_anything
+src=open(SRC,encoding='utf-8').read()
+def data(name):
+    t=open(os.path.join(ROOT,'src',name),encoding='utf-8').read().strip()
+    assert '`' not in t and '${' not in t and '\\' not in t
+    return t
+pages={'index.html':src.replace('__ANIMALS__',data('animals.tsv')),
+       'anything.html':world_anything.transform(src).replace('__ANIMALS__',data('things.tsv'))}
 os.makedirs(os.path.join(ROOT,'dist'),exist_ok=True)
-open(os.path.join(ROOT,'dist','artifact.html'),'w',encoding='utf-8').write(body)
-body=body.replace('<meta name="claude:viewport-fit-sides" content="cover">\n','')
-title_line,rest=body.split('\n',1)
-ver=hashlib.sha1(body.encode()).hexdigest()[:10]
-head=f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
+open(os.path.join(ROOT,'dist','artifact.html'),'w',encoding='utf-8').write(pages['index.html'])
+open(os.path.join(ROOT,'dist','anything.html'),'w',encoding='utf-8').write(pages['anything.html'])
+ver=hashlib.sha1((pages['index.html']+pages['anything.html']).encode()).hexdigest()[:10]
+def wrap(body):
+    body=body.replace('<meta name="claude:viewport-fit-sides" content="cover">\n','')
+    title_line,rest=body.split('\n',1)
+    head=f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 {title_line}
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -27,14 +34,16 @@ head=f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <style>:root{{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}}body{{margin:0}}img{{max-width:100%}}[hidden]{{display:none!important}}</style>
 </head><body>
 '''
-open(os.path.join(SITE,'index.html'),'w',encoding='utf-8').write(head+rest+'\n</body></html>\n')
+    return head+rest+'\n</body></html>\n'
+for fn,body in pages.items():
+    open(os.path.join(SITE,fn),'w',encoding='utf-8').write(wrap(body))
 json.dump({"name":"The Animal Game","short_name":"Animal Game","start_url":"./","scope":"./","display":"standalone",
   "background_color":"#e7f4ec","theme_color":"#e7f4ec","orientation":"any",
   "icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png"},{"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}]},
   open(os.path.join(SITE,'manifest.webmanifest'),'w'),indent=1)
 sw=f'''// The Animal Game offline cache, version {ver}
 const CACHE='animal-game-{ver}';
-const CORE=['./','index.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
+const CORE=['./','index.html','anything.html','manifest.webmanifest','icon-180.png','icon-192.png','icon-512.png'];
 self.addEventListener('install',e=>{{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()));}});
 self.addEventListener('activate',e=>{{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));}});
 self.addEventListener('fetch',e=>{{
@@ -43,7 +52,8 @@ self.addEventListener('fetch',e=>{{
   if(u.origin===location.origin){{
     // Network first for the page so updates arrive; fall back to the saved copy offline.
     if(r.mode==='navigate'){{
-      e.respondWith(fetch(r).then(res=>{{ if(res.ok){{const cp=res.clone(); caches.open(CACHE).then(c=>c.put('index.html',cp));}} return res; }}).catch(()=>caches.match('index.html')));
+      const page=/anything\\.html$/.test(u.pathname)?'anything.html':'index.html';
+      e.respondWith(fetch(r).then(res=>{{ if(res.ok){{const cp=res.clone(); caches.open(CACHE).then(c=>c.put(page,cp));}} return res; }}).catch(()=>caches.match(page)));
       return;
     }}
     e.respondWith(caches.match(r).then(m=>m||fetch(r).then(res=>{{ if(res.ok){{const cp=res.clone(); caches.open(CACHE).then(c=>c.put(r,cp));}} return res; }})));
