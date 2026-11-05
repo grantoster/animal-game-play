@@ -77,11 +77,11 @@ How to play well:
 SY = "/*W:SY*/const SYNONYM={'fries':'french fries','tv':'television','telly':'television','fridge':'refrigerator','phone':'smartphone','cell phone':'smartphone','sofa':'couch','bike':'bicycle','plane':'airplane','sneaker':'sneakers','glasses':'eyeglasses','frisbee':'flying disc','doughnut':'donut','hotdog':'hot dog','lightbulb':'light bulb','hamburger':'hamburger','burger':'hamburger','teddy':'teddy bear','yoyo':'yo-yo'};/*/W:SY*/"
 
 RU = r'''/*W:RU*/const RULES=[
- ['ea',/\b(can (you|i|we) eat|eat it|edible|eaten)\b/],['fd',/\bfoods?\b/],['dk',/\b(drink|beverage)\b/],
- ['pt',/\b(plant|plants|fungus|flower|tree)\b/],['veh',/\b(vehicle|drive it|transport)\b/],['tl',/\btools?\b/],['ty',/\b(toy|toys|game)\b/],
- ['el',/\b(electronic|electronics|device|gadget|computer)\b/],['mu2',/\b(make|makes|play|plays) music\b/],['mu',/\binstrument\b/],
+ ['ea',/\b(can (you|i|we) eat|eat it|edible|eaten|you eat|people eat)\b/],['fd',/\bfoods?\b/],['dk',/\b(drink|beverage)\b/],
+ ['pt',/\b(plant|plants|fungus|flower|tree)\b/],['veh',/\b(vehicle|drive it|transport)\b/],['ty',/\b(toy|toys|game)\b/],
+ ['kt',/\bkitchen (item|tool|thing|utensil)|\butensil/],['tl',/\btools?\b/],['el',/\b(electronic|electronics|device|gadget|computer)\b/],['mu2',/\b(make|makes|play|plays) music\b/],['mu',/\binstrument\b/],
  ['spt',/\bsports? (equipment|gear)\b/],['sp2',/\b(sport|sports)\b/],['cl',/\b(clothing|clothes|outfit)\b/],['wr',/\b(wear|wearable|put it on)\b/],
- ['fn',/\bfurniture\b/],['kt',/\bkitchen (item|tool|thing|utensil)|\butensil/],['kc',/\bkitchen\b/],
+ ['fn',/\bfurniture\b/],['kc',/\bkitchen\b/],
  ['so',/\b(school|office) (supply|supplies)\b/],['cs',/\b(classroom|school|office|desk)\b/],['bt',/\b(personal care|hygiene)\b/],['bth',/\bbath ?room\b/],
  ['bd',/\b(building|structure|live in it)\b/],['nt',/\b(nature|natural)\b/],['al',/\b(alive|living)\b/],['mm',/\b(man ?made|made by (people|humans)|manufactured|factory)\b/],
  ['lt2',/\b(light up|lights up|glow|glows|bright)\b/],['lt',/\b(lightweight|weighs (very )?little|is it light)\b/],
@@ -89,33 +89,48 @@ RU = r'''/*W:RU*/const RULES=[
  ['hd',/\b(fit in (your|my|a) (hand|pocket)|handheld|is it (small|tiny|little))\b/],['hv',/\bheavy\b/],
  ['rd',/\b(round|ball shaped|sphere|circle|circular)\b/],['rc',/\b(rectangle|rectangular|square|box shaped|boxy)\b/],
  ['sf',/\b(soft|squishy|fluffy)\b/],['hr',/\b(hard|solid)\b/],['sy',/\b(shiny|sparkly|reflective)\b/],['sx',/\b(sharp|pointy|pointed)\b/],
- ['fx',/\b(bendy|bend|flexible|stretchy)\b/],['lg',/\b(long and thin|skinny|long)\b/],
+ ['fx',/\b(bendy|bend|flexible|stretchy)\b/],['ol',/\b(ancient|invented long ago|long ago|long time ago|is it old|really old|older than)\b/],['lg',/\b(long and thin|skinny|long(?! ago| time))\b/],
  ['mt',/\b(metal|steel|iron|aluminum)\b/],['wd',/\b(wood|wooden)\b/],['gl',/\bglass\b/],['ps',/\bplastic\b/],['pa',/\b(paper|cardboard)\b/],
  ['fb',/\b(fabric|cloth|cotton)\b/],['rb',/\brubber\b/],['st',/\b(stone|rock|concrete|brick)\b/],['cr',/\b(ceramic|clay|porcelain)\b/],
  ['cbr',/\bbrown\b/],['cgy',/\b(gray|grey)\b/],['cwt',/\bwhite\b/],['cbk',/\bblack\b/],['cor',/\borange\b/],['cgd',/\bgold(en)?\b/],['cye',/\byellow\b/],
  ['cgr',/\bgreen\b/],['cpk',/\bpink\b/],['crd',/\bred\b/],['cbl',/\bblue\b/],['cpu',/\bpurple\b/],['csl',/\bsilver\b/],
  ['wh',/\bwheels?\b/],['sc',/\b(screen|display)\b/],['bt2',/\b(buttons?|keys|keyboard)\b/],['hn',/\bhandles?\b/],['lg4',/\blegs?\b/],['ld',/\b(lid|cap|cover)\b/],
  ['sr',/\bstrings?\b/],['bl',/\bblades?\b/],['mv',/\b(moving parts|move|moves)\b/],['pr',/\b(pair|pairs|two of them)\b/],['so2',/\b(sound|sounds|noise|noisy|loud|beep)\b/],
- ['pl2',/\bplug/],['ug',/\b(electricity|electric|batter(y|ies)|power)\b/],['ct',/\b(hold things|holds things|container|store things|put things in|carry things)\b/],
+ ['pl2',/\bplug/],['ug',/\b(electricity|electric|batter(y|ies)|power|charge|charged|charging)\b/],['ct',/\b(hold things|holds things|container|store things|put things in|carry things)\b/],
  ['wn',/\b(wings?|propellers?)\b/],['en',/\b(engine|motor)\b/],
- ['sw',/\b(sweet|sugar|sugary|dessert|candy)\b/],['sa',/\b(salty|savory)\b/],['ho',/\b(hot|warm|heat)\b/],['cd',/\b(cold|frozen|freezer|ice|icy)\b/],
+ ['sw',/\b(sweet|sugar|sugary)\b/],['sa',/\b(salty|savory)\b/],['ho',/\b(hot|warm|heat)\b/],['cd',/\b(cold|frozen|freezer|ice|icy)\b/],
  ['si',/\b(sit|lie|sleep) on\b/],['ri',/\b(ride|travel in)\b/],['fl',/\b(fly|flies|flying)\b/],['fw',/\b(float|floats|on water|in water|boat)\b/],
  ['wt',/\b(write|writes|draw|draws|writing)\b/],['cu',/\b(cut|cuts|cutting|chop)\b/],['cn',/\b(clean|cleans|cleaning|wash)\b/],
  ['ms',/\b(measure|measures|tell time|tells time)\b/],['cm',/\b(talk|call|message|communicate)\b/],['pl3',/\b(play with|playing)\b/],
  ['ln2',/\b(learn|learning|read|reading|study)\b/],['ck',/\b(cook|cooking|bake|baking)\b/],['gw',/\b(grow|grows|growing)\b/],
  ['br',/\bbedroom\b/],['gr',/\b(garage|shed|toolshed|workshop)\b/],['sea',/\b(beach|ocean|sea)\b/],['sk',/\b(sky|space|outer space)\b/],
- ['hm',/\b(most homes|in a house|at home|in my house|every house)\b/],['ow',/\b(street|city|farm)\b/],['od',/\b(outside|outdoors|outdoor)\b/],
- ['ch',/\b(cheap|inexpensive|cost less)\b/],['ex',/\b(expensive|costly|cost a lot)\b/],['ol',/\b(ancient|invented long ago|really old)\b/],
+ ['hm',/\b(most homes|most houses|in a house|at home|in my house|in your house|every house)\b/],['ow',/\b(street|city|farm)\b/],['od',/\b(outside|outdoors|outdoor)\b/],
+ ['ch',/\b(cheap|inexpensive|cost less)\b/],['ex',/\b(expensive|costly|cost a lot)\b/],
  ['nw',/\b(new invention|modern|invented recently)\b/],['kd',/\b(kids|children) use\b|\bfor kids\b/],['dg',/\b(dangerous|hurt you|unsafe)\b/]
 ];
 const INVERSE={};
 const DERIVED={};
-const GROUP_TESTS={};
-const ALIAS={};
+const FRUITS=['apple','banana','orange','strawberry','watermelon','grapes','pineapple','lemon','avocado','coconut','cherries','dragon fruit','pomegranate','pumpkin'];
+const VEGGIES=['carrot','corn','potato','broccoli','onion','pickle','artichoke','mushroom'];
+const GROUP_TESTS={fruit:a=>FRUITS.includes(a.name),vegetable:a=>VEGGIES.includes(a.name),veggie:a=>VEGGIES.includes(a.name),
+ ball:a=>/ball$/.test(a.name)&&a.name!=='bowling ball'||a.name==='bowling ball',vehicle:a=>!!a.attrs.veh,instrument:a=>!!a.attrs.mu,
+ food:a=>!!a.attrs.fd,drink:a=>!!a.attrs.dk,toy:a=>!!a.attrs.ty,tool:a=>!!a.attrs.tl,plant:a=>!!a.attrs.pt,furniture:a=>!!a.attrs.fn,
+ building:a=>!!a.attrs.bd,boat:a=>['sailboat','canoe','cruise ship','submarine','hovercraft'].includes(a.name),car:a=>a.name==='car',
+ candy:a=>['lollipop','chocolate bar','cotton candy','marshmallow'].includes(a.name),dessert:a=>['ice cream cone','cookie','birthday cake','donut','cupcake','cotton candy','fortune cookie'].includes(a.name),
+ shoe:a=>['sneakers','rain boots'].includes(a.name)};
+const ALIAS={fries:'french fries',tv:'television',telly:'television',fridge:'refrigerator',phone:'smartphone','cell phone':'smartphone',cellphone:'smartphone','mobile phone':'smartphone',
+ sofa:'couch',bike:'bicycle',plane:'airplane',jet:'airplane',frisbee:'flying disc',doughnut:'donut',hotdog:'hot dog',lightbulb:'light bulb',burger:'hamburger',teddy:'teddy bear',
+ yoyo:'yo-yo','yo yo':'yo-yo',sneaker:'sneakers',shoes:'sneakers',glasses:'eyeglasses',cap:'baseball cap',hat:'baseball cap',controller:'video game controller',
+ 'game controller':'video game controller',mouse:'computer mouse',keyboard:'computer keyboard',ipad:'tablet',bus:'school bus',firetruck:'fire truck','fire engine':'fire truck',
+ 'ice cream':'ice cream cone',cake:'birthday cake',chocolate:'chocolate bar',cards:'playing cards',puzzle:'jigsaw puzzle',blocks:'toy blocks',skates:'roller skates',
+ helmet:'bike helmet',boots:'rain boots','spaceship':'rocket',blimp:'hot air balloon',tree:'oak tree',stone:'rock',shell:'seashell','pine cone':'pinecone'};
 /*/W:RU*/
 '''
 
-BLOCKS = {'QS':QS,'LV':LV,'AIS':AIS,'GS':GS,'SY':SY,'RU':RU}
+AN = r'''/*W:AN*/const NO_ART=new Set(['honey','milk','tea','lemonade','popcorn','spaghetti','toothpaste','shampoo','toilet paper','tape','bread','cheese','cotton candy','bamboo','sushi','corn','broccoli','orange juice','hot chocolate','soap','dice','chess set'].filter(x=>x!=='chess set'));
+const an=s=>{ s=String(s).toLowerCase(); if(NO_ART.has(s)||(/s$/.test(s)&&!/(ss|us|is|ous)$/.test(s))) return ''; return /^(eu|uni|one|u[bcfhjkqrst][aeiou])/.test(s)?'a':/^([aeiou]|hour|honest|heir)/.test(s)?'an':'a'; };/*/W:AN*/'''
+EM = "/*W:EM*/const EMOJI_CHOICES=['📦','🍎','🍕','🥤','🌻','🪨','🧸','🎲','🧩','🪁','⚽','🏀','🎸','🥁','🎹','📱','💻','📺','📷','🎧','💡','🔦','🔑','✂️','🖍️','✏️','📚','🎒','⏰','🧭','🔭','🔬','🔨','🪛','🪜','🧹','🧽','🪣','🛁','🚽','🪥','🧼','👕','👖','👟','🧢','🧤','🧣','👓','💍','⌚','🛏️','🪑','🛋️','🚪','🪟','🍳','🥄','🍴','🔪','🫖','☕','🧊','🚗','🚌','🚲','🛴','🛹','✈️','🚁','🚀','⛵','🚂','🏠','🏰','🗼','🌉','⛺','🌳','🌵','🍄','🌹','🐚','❄️','⛄','🎈','🎁','🏆','🪙','💎','🧲','🕯️','☂️','🪃','🪀','🎨','🖼️','🧵','🪡','🧯','⚓','🛰️'];/*/W:EM*/"
+BLOCKS = {'QS':QS,'AN':AN,'EM':EM,'LV':LV,'AIS':AIS,'GS':GS,'SY':SY,'RU':RU}
 
 # (old, new) pairs applied everywhere they occur; each must match at least once.
 TEXT = [
@@ -184,6 +199,12 @@ TEXT = [
  ("Learned animals:","Learned things:"),
  ("learned animals. Loading","learned things. Loading"),
  ("an Animal Game backup","an Anything Game backup"),
+ ("const TEST_Q=['bengal tiger','Does it have stripes?']; const DEF_EMOJI='🐾'; const SECRET_LABEL='Secret animal';","const TEST_Q=['soccer ball','Is it round?']; const DEF_EMOJI='📦'; const SECRET_LABEL='Secret object';"),
+ ("secret animal. Fewer tries","secret object. Fewer tries"),("secret animal. Take turns asking","secret object. Take turns asking"),("secret animal. The other asks","secret object. The other asks"),
+ ("'Make your final guess':'Does it have stripes?'","'Make your final guess':'Is it made of metal?'"),
+ ("Example: It sleeps upside down","Example: It was invented by accident"),
+ ('<div class="pic" aria-hidden="true">🐾</div><b>Watch the board fade','<div class="pic" aria-hidden="true">🧩</div><b>Watch the board fade'),
+ ("const OK_EMOJI=new Set([...EMOJI_CHOICES,","const OK_EMOJI=new Set([DEF_EMOJI,...EMOJI_CHOICES,"),
  ("Find a species","Find a thing"),
 ]
 

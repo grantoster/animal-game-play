@@ -15,17 +15,17 @@ pages={'index.html':src.replace('__ANIMALS__',data('animals.tsv')),
        'anything.html':world_anything.transform(src).replace('__ANIMALS__',data('things.tsv'))}
 os.makedirs(os.path.join(ROOT,'dist'),exist_ok=True)
 open(os.path.join(ROOT,'dist','artifact.html'),'w',encoding='utf-8').write(pages['index.html'])
-open(os.path.join(ROOT,'dist','anything.html'),'w',encoding='utf-8').write(pages['anything.html'])
 ver=hashlib.sha1((pages['index.html']+pages['anything.html']).encode()).hexdigest()[:10]
-def wrap(body):
+def wrap(body,pwa=True):
     body=body.replace('<meta name="claude:viewport-fit-sides" content="cover">\n','')
     title_line,rest=body.split('\n',1)
+    app_title='Anything Game' if 'The Anything Game' in title_line else 'Animal Game'
     head=f'''<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 {title_line}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Animal Game">
+<meta name="apple-mobile-web-app-title" content="{app_title}">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#e7f4ec">
 <link rel="manifest" href="manifest.webmanifest">
@@ -34,7 +34,11 @@ def wrap(body):
 <style>:root{{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}}body{{margin:0}}img{{max-width:100%}}[hidden]{{display:none!important}}</style>
 </head><body>
 '''
+    if not pwa:
+        head=re.sub(r'<meta name="(apple-mobile|mobile)-web-app[^>]*>\n|<meta name="theme-color"[^>]*>\n|<link rel="(manifest|apple-touch-icon|icon)"[^>]*>\n','',head)
+        head=head.replace('body{{margin:0}}'.replace('{{','{').replace('}}','}'),'body{margin:0;font:14px system-ui,sans-serif}')
     return head+rest+'\n</body></html>\n'
+open(os.path.join(ROOT,'dist','anything.html'),'w',encoding='utf-8').write(wrap(pages['anything.html'],pwa=False))
 for fn,body in pages.items():
     open(os.path.join(SITE,fn),'w',encoding='utf-8').write(wrap(body))
 json.dump({"name":"The Animal Game","short_name":"Animal Game","start_url":"./","scope":"./","display":"standalone",
